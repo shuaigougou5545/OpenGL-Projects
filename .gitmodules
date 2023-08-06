@@ -1,0 +1,6 @@
+[submodule "3rd_party/GLFW"]
+	path = 3rd_party/GLFW
+	url = https://github.com/shuaigougou5545/GLFW.git
+[submodule "3rd_party/GLAD"]
+	path = 3rd_party/GLAD
+	url = https://github.com/shuaigougou5545/GLAD.git
