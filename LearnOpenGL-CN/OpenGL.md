@@ -2,6 +2,8 @@
 
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308071545046.png" alt="截屏2023-08-07 15.45.14" style="zoom:50%;" />
 
+## S1 前言
+
 ### 1.GLFW & GLAD
 
 #### （1）GLFW
@@ -54,3 +56,107 @@ OpenGL中可以同时出现多个上下文，但每个线程或进程中只能�
 OpenGL对象是指一些选项的集合，类似于一个struct结构体
 
 使用对象：创建对象,同时保存对象的id(引用) -> 绑定对象到上下文 -> 用函数修改对象的选项 -> 解绑对象
+
+## S2 OpenGL渲染
+
+### 1.基本流程
+
+#### （0）流程梳理
+
+- GLFW
+  - glfw初始化
+  - 创建glfw窗口，绑定opengl上下文
+- GLAD
+  - glad初始化
+- OpenGL渲染设置
+  - 视口（viewport），注册回调函数检测窗口变动而修改视口
+- OpenGL渲染主循环
+  - 交换颜色缓冲区
+  - glfw轮询事件
+
+- GLFW
+  - glfw析构（释放资源）
+
+
+#### （1）GLFW初始化
+
+```cpp
+glfwInit();
+glfwWindowHint(GLFW_VERSION_MAJOR, 3);
+glfwWindowHint(GLFW_VERSION_MINOR, 3);
+glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+```
+
+`GLFW_OPENGL_FORWARD_COMPAT`：前向兼容 - 在此是指不再支持老版本所丢弃的特性
+
+前向兼容: forward  - 在某一平台的较低版本环境中编写的程序可以在较高版本的环境中运行【向未来兼容】
+后向兼容: backward - 【向过去兼容】
+
+#### （2）创建窗口&绑定上下文
+
+```cpp
+GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL-01", NULL, NULL);
+if(!window){
+    glfwTerminate();
+    return -1;
+}
+glfwMakeContextCurrent(window);
+```
+
+#### （3）GLAD初始化
+
+```cpp
+if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
+    return -1;
+}
+```
+
+**gladLoadGLLoader**函数需要传入一个函数，这里传入的glfw库的**glfwGetProcAddress**函数，该函数可以根据名字查找符合当前操作系统的对应OpenGL函数
+
+#### （4）视口
+
+视口：OpenGL渲染窗口的大小，渲染窗口应该比GLFW创建的系统窗口维度要小
+
+```cpp
+glViewport(0, 0, 800, 600);
+```
+
+形参类似Rect2，前两参数以左下角为起点，后两参数为宽高
+
+注意：glfw创建的系统窗口可以通过鼠标进行大小变动，但视口不会随之变动，所以需要手动设置，我们可以通过glfw库的**glfwSetFramebufferSizeCallback**函数，为glfw窗口变动时绑定回调函数，改动视口
+
+```cpp
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+```
+
+=> 这里使用的是`...Framebuffer...`是指帧缓冲大小，是指存储图像渲染结果的尺寸大小，帧缓冲在前，随后才会呈现在屏幕上 -- 这里没用`...Window...`，可能原因是：“默认情况下，GLFW会尝试匹配窗口的大小和帧缓冲的大小，以保持它们的一致性”，所以这里帧缓冲和窗口基本无差异；而且帧缓冲与视口应该才是对应变动关系
+
+#### （5）交换颜色缓冲区
+
+```cpp
+glfwSwapBuffers(window);
+```
+
+双缓冲机制，颜色缓冲是一个存储着GLFW窗口每一个像素颜色的缓冲区，最终也会呈现在GLFW窗口上，所以这里是glfw函数
+
+#### （6）glfw轮询事件
+
+```cpp
+glfwPollEvents();
+```
+
+查看是否有glfw触发的事件
+
+#### （7）GLFW释放资源
+
+```cpp
+glfwTerminate();
+```
+
+需要初始化，也就应当要释放资源
