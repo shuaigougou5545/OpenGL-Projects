@@ -82,8 +82,8 @@ OpenGL对象是指一些选项的集合，类似于一个struct结构体
 
 ```cpp
 glfwInit();
-glfwWindowHint(GLFW_VERSION_MAJOR, 3);
-glfwWindowHint(GLFW_VERSION_MINOR, 3);
+glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 ```
@@ -136,6 +136,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 ```
 
 => 这里使用的是`...Framebuffer...`是指帧缓冲大小，是指存储图像渲染结果的尺寸大小，帧缓冲在前，随后才会呈现在屏幕上 -- 这里没用`...Window...`，可能原因是：“默认情况下，GLFW会尝试匹配窗口的大小和帧缓冲的大小，以保持它们的一致性”，所以这里帧缓冲和窗口基本无差异；而且帧缓冲与视口应该才是对应变动关系
+
+⚠️这里还必须注册该回调函数以更新视口，不然MAC平台运行报错，可能原因是视口没随窗口大小更新产生问题
 
 #### （5）交换颜色缓冲区
 
