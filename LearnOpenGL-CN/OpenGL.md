@@ -69,10 +69,16 @@ OpenGL对象是指一些选项的集合，类似于一个struct结构体
 - GLAD
   - glad初始化
 - OpenGL渲染设置
-  - 视口（viewport），注册回调函数检测窗口变动而修改视口
+  - 视口（viewport）
+- 注册GLFW回调函数
+  - 检测窗口变动，以修改视口
+
 - OpenGL渲染主循环
+  - 渲染指令
+    - 清理颜色缓冲
+
+  - GLFW轮询事件查询
   - 交换颜色缓冲区
-  - glfw轮询事件
 
 - GLFW
   - glfw析构（释放资源）
@@ -82,11 +88,13 @@ OpenGL对象是指一些选项的集合，类似于一个struct结构体
 
 ```cpp
 glfwInit();
-glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); 
 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 ```
+
+`GLFW_CONTEXT_VERSION_MAJOR`和`GLFW_CONTEXT_VERSION_MINOR`：设置OpenGL上下文 => ~~这里不要误写成`GLFW_VERSION_MAJOR`，以免GLFW初始化失败，随之会导致窗口创建失败~~
 
 `GLFW_OPENGL_FORWARD_COMPAT`：前向兼容 - 在此是指不再支持老版本所丢弃的特性
 
@@ -162,3 +170,215 @@ glfwTerminate();
 ```
 
 需要初始化，也就应当要释放资源
+
+#### （8）清理缓冲区
+
+```cpp
+glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+glClear(GL_COLOR_BUFFER_BIT);
+```
+
+有三个缓冲区：颜色缓冲、深度缓冲、模版缓冲 - `GL_COLOR_BUFFER_BIT`,`GL_DEPTH_BUFFER_BIT`,`GL_STENCIL_BUFFER_BIT`
+
+首先通过`glClearColor`,`glClearDepth`,`glClearStencil`设置清空缓冲区对应的颜色值，再调用`glClear`选择要清理的缓冲区
+
+`glClearColor`就是一个状态设置函数，`glClear`就是一个状态使用函数
+
+### 2.VAO & VBO & EBO(IBO)
+
+#### （0）区分三个对象
+
+- VAO：Vertex Array Object - 顶点数组对象
+- VBO：Vertex Buffer Object - 顶点缓冲对象
+- EBO/IBO：Element/Index Buffer Object - 索引缓冲对象
+
+#### （1）VBO
+
+```cpp
+unsigned int VBO;
+glGenBuffers(1, &VBO);
+glBindBuffer(GL_ARRAY_BUFFER, VBO);
+glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // vertices: float[]顶点数据
+```
+
+VBO的作用是将顶点数据一次性发送到显存（GPU内存）上
+
+通过`glGenBuffers`创建缓冲对象后，需要绑定到对应对象上去，VBO的缓冲类型是`GL_ARRAY_BUFFER`，后续我们使用关于`GL_ARRAY_BUFFER`的缓冲调用，都是使用绑定在其上的VBO
+
+`glBufferData`将用户数据复制到对应缓冲区中，第四个参数指定我们希望显卡如何管理给定的数据，主要意图就是便于GPU管理显存中存放的数据：
+
+- `GL_STATIC_DRAW`：数据几乎不会改变 - 主要存储一次性的数据，比如模型的顶点数据
+- `GL_DYNAMIC_DRAW`：数据周期性地改变，但频率不高
+- `GL_STREAM_DRAW`：数据每次绘制都会改变
+
+#### （2）EBO/IBO
+
+EBO与VBO的函数调用基本一致，因为都是BO（Buffer Object）缓冲对象，唯一不同点是缓冲类型是`GL_ELEMENT_ARRAY_BUFFER`
+
+#### （3）VAO
+
+##### 顶点属性
+
+```cpp
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+glEnableVertexAttribArray(0);
+```
+
+`glVertexAttribPointer`：解析顶点数据，这里用的`xxxPointer`是因为最后一个参数
+
+- 参数1：对应Location值
+- 参数2：顶点属性大小，比如vec3，则是3
+- 参数3：数据类型 - GL_FLOAT对应vecn
+- 参数4：是否希望数据被标准化
+- 参数5：步长，每组之间的字节长度
+- 参数6：偏移量，类型是`void*`
+
+`glEnableAttribPointer`：参数是Location值
+
+🤔️这里有多种函数，具有不同的后缀，比如`xxxPointer`,`xxx1f`。`xxxPointer`的作用是传递一组顶点属性数据，而`xxx1f`的作用是传递单个值；**为什么`xxxPointer`以pointer为后缀，我觉得原因可能是它的最后一个参数需要一个指向顶点属性数据的指针，这个指针用来指定数据存储的位置** --<font color='bblue'> **但是这里我们传递的是`(void*)0`，这是因为这是一个<u>特殊情况</u>，它会让OpenGL从当前绑定的顶点数组`GL_ARRAY_BUFFER`中获取顶点属性数据**</font> => 这里完全可以传入一个浮点数数组的指针
+
+##### VAO
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308111741222.png" alt="截屏2023-08-11 17.41.36" style="zoom:50%;" />
+
+VAO能够存储**顶点属性**相关的调用：
+
+- `glEnableVertexAttribArray`和`glDisableVertexAttribArray`的调用
+- 通过`glVertexAttribPointer`设置的顶点属性配置
+- 通过`glVertexAttribPointer`调用与顶点属性关联的顶点缓冲对象（VBO），也会存储对应（EBO）
+
+```cpp
+glGenVertexArrays(1, &VAO);
+glBindVertexArray(VAO);
+... // 存储相关操作:VBO的绑定,数据复制到VBO,顶点属性调用
+glBindVertexArray(0);
+
+// 渲染指令之前绑定对应VAO
+glBindVertexArray(VAO);
+```
+
+#### （4）shader - VS & PS/FS
+
+##### VS
+
+```cpp
+unsigned int VS;
+VS = glCreateShader(GL_VERTEX_SHADER);
+glShaderSource(VS, 1, &vertexShaderSource, NULL);
+glCompileShader(VS);
+```
+
+🤔️这里`glCreateShader`是通过返回值传递ID的，之前`glGenBuffers`是通过传入引用来传递ID的，这么设计的原因可能是：GenBuffers可以一次性创建多个buffer，所以不选择通过返回值（不然就得返回数组）来得到ID，而CreateShader一次只能创建一个Shader，所以通过返回值来传递ID
+
+`glShaderSource`将数据传递到VS对象上，这里第二个参数指定字符串的数量
+
+shader编译失败，报错：检查shader语法错误
+
+```cpp
+int success;
+char infoLog[512];
+glGetShaderiv(VS, GL_COMPILE_STATUS, &success);
+if(!success)
+{
+    glGetShaderInfoLog(VS, 512, NULL, infoLog);
+    std::cout << "VS COMPILATION FAILED: \n" << infoLog << std::endl;
+}
+```
+
+这里'iv'是int vector整数数组的缩写，因为很多状态位都是用整数来存储，所以这里查询的就是`GL_COMPILE_STATUS`的结果
+
+##### PS
+
+像素着色器同理，唯一不同是创建shader时是`GL_FRAGMENT_SHADER`
+
+##### 着色器程序 shader program
+
+```cpp
+unsigned int SP;
+SP = glCreateProgram();
+glAttachShader(SP, VS);
+glAttachShader(SP, PS);
+glLinkProgram(SP);
+```
+
+着色器程序用于合并多个着色器，比如将VS和PS**链接**在一起，并检查是否合理
+
+先将shader依次附给着色器程序，然后进行链接
+
+着色器程序链接失败，报错：检查VS和PS输入输出是否匹配
+
+```cpp
+glGetProgramiv(SP, GL_LINK_STATUS, &success);
+if(!success)
+{
+    glGetProgramInfoLog(SP, 512, NULL, infoLog);
+    std::cout << "SHADER PROGRAM LINK FAILED: \n" << infoLog << std::endl;
+}
+```
+
+链接成功后我们可以直接使用该程序对象：
+
+```cpp
+glUseProgram(SP);
+```
+
+链接到程序对象后，着色器对象就不再使用了，应该删除释放资源：
+
+```cpp
+glDeleteShader(VS);
+glDeleteShader(PS);
+```
+
+#### （5）渲染指令
+
+两个主要的渲染指令：`glDrawArrays`和`glDrawElements`
+
+```cpp
+glDrawArrays(GL_TRIANGLES, 0, 3);
+```
+
+参数依次是：图元拓扑，顶点数组的起始索引，绘制的顶点数
+
+```cpp
+glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+```
+
+参数依次是：图元拓扑，绘制的顶点数（索引个数，重复的顶点也会算进去），索引的类型，EBO中的偏移量
+
+🤔️如何记忆`...Arrays`,`...Elements`：VBO对应的缓冲类型是`GL_ARRAY_BUFFER`，所以不用索引则是draw arrays；EBO对应的缓冲类型是`GL_ELEMENT_ARRAY_BUFFER`，所以用索引则是draw elements
+
+#### （6）特殊case
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308111834238.png" alt="截屏2023-08-11 18.19.45" style="zoom:50%;" />
+
+VAO存储顶点属性相关指令时，有一个特殊case，参考👆图：VAO不会存储VBO解绑操作，但会存储EBO解绑操作
+
+🤔️产生这种case的可能原因是：VAO会记录最后一个被绑定到`GL_ELEMENT_ARRAY_BUFFER`的EBO，所以如果在此期间解绑了EBO但没绑定新的EBO，那么VAO当然不会具有正确的EBO配置；但VBO则不同，即使在VAO启用期间解绑VBO，VAO仍能知道这个VBO是与顶点属性所关联的，所以可以在VAO启用期间安全解绑VBO
+
+🤨那我猜测：EBO和VBO的这种差异，可能是因为VBO往往只会设置一次，而EBO会设置多次，因为索引可能根据不同情况进行改变
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308111834710.png" alt="截屏2023-08-11 18.34.14" style="zoom:50%;" />
+
+#### （7）其他渲染设置
+
+##### 多边形渲染模式：线框模式、默认模式等
+
+- 线框模式
+
+```cpp
+glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+```
+
+- 默认模式
+
+```
+glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+```
+
+- 点模式
+
+```
+glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+```
+
+第一个参数用于指定要设置的面，可以是正面，背面，或者正背面；第二个参数指定渲染模式，包括绘制线，填充，绘制点

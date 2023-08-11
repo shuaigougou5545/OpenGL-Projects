@@ -30,6 +30,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		941FD5FF2A85EB6500C932DD /* VS.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VS.glsl; sourceTree = "<group>"; };
 		94BC38D12A7FE11F0092A6A6 /* LearnOpenGL-01 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "LearnOpenGL-01"; sourceTree = BUILT_PRODUCTS_DIR; };
 		94BC38DC2A7FE1550092A6A6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		94BC38DF2A7FE1FA0092A6A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -58,11 +59,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		941FD5FE2A85EA9700C932DD /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				941FD5FF2A85EB6500C932DD /* VS.glsl */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
 		94BC38C82A7FE11F0092A6A6 = {
 			isa = PBXGroup;
 			children = (
-				94BC38EB2A7FE98D0092A6A6 /* reference */,
-				94BC38DB2A7FE1300092A6A6 /* src */,
+				941FD5FE2A85EA9700C932DD /* Shaders */,
+				94BC38EB2A7FE98D0092A6A6 /* Reference */,
+				94BC38DB2A7FE1300092A6A6 /* Src */,
 				94BC38D22A7FE11F0092A6A6 /* Products */,
 				94BC38DE2A7FE1FA0092A6A6 /* Frameworks */,
 			);
@@ -76,12 +86,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		94BC38DB2A7FE1300092A6A6 /* src */ = {
+		94BC38DB2A7FE1300092A6A6 /* Src */ = {
 			isa = PBXGroup;
 			children = (
 				94BC38DC2A7FE1550092A6A6 /* main.cpp */,
 			);
-			path = src;
+			path = Src;
 			sourceTree = "<group>";
 		};
 		94BC38DE2A7FE1FA0092A6A6 /* Frameworks */ = {
@@ -97,12 +107,12 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		94BC38EB2A7FE98D0092A6A6 /* reference */ = {
+		94BC38EB2A7FE98D0092A6A6 /* Reference */ = {
 			isa = PBXGroup;
 			children = (
 				94BC38ED2A7FE9CD0092A6A6 /* glad.c */,
 			);
-			name = reference;
+			name = Reference;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
