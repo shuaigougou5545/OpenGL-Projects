@@ -52,6 +52,7 @@
 		941FD6002A8649B200C932DD = {
 			isa = PBXGroup;
 			children = (
+				941FD6282A864F1B00C932DD /* Shaders */,
 				941FD6252A864DE300C932DD /* Reference */,
 				941FD60B2A8649B200C932DD /* Src */,
 				941FD60A2A8649B200C932DD /* Products */,
@@ -91,6 +92,13 @@
 				941FD6262A864DF300C932DD /* glad.c */,
 			);
 			name = Reference;
+			sourceTree = "<group>";
+		};
+		941FD6282A864F1B00C932DD /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Shaders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

@@ -122,6 +122,10 @@ if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
 
 **gladLoadGLLoader**函数需要传入一个函数，这里传入的glfw库的**glfwGetProcAddress**函数，该函数可以根据名字查找符合当前操作系统的对应OpenGL函数
 
+Proc：是procedure，过程、函数的缩写
+
+🤔️这一步容易忘记，如果漏写，OpenGL函数就会报错！！
+
 #### （4）视口
 
 视口：OpenGL渲染窗口的大小，渲染窗口应该比GLFW创建的系统窗口维度要小
