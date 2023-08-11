@@ -363,13 +363,13 @@ VAO存储顶点属性相关指令时，有一个特殊case，参考👆图：VAO
 
 ##### 多边形渲染模式：线框模式、默认模式等
 
-- 线框模式
+- **线框模式**
 
 ```cpp
 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 ```
 
-- 默认模式
+- **默认模式**
 
 ```
 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -377,8 +377,8 @@ glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 - 点模式
 
-```
+```cpp
 glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 ```
 
-第一个参数用于指定要设置的面，可以是正面，背面，或者正背面；第二个参数指定渲染模式，包括绘制线，填充，绘制点
+第一个参数用于指定要设置的面，可以是正面，背面，或者正背面；第二个参数指定渲染模式，包括绘制线（LINE），填充（FILL），绘制点（POINT）
