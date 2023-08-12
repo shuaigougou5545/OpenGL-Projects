@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "DebugFunction.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 int main()
@@ -29,6 +31,7 @@ int main()
         glfwTerminate();
         return -1;
     }
+    
     
     while(!glfwWindowShouldClose(window))
     {

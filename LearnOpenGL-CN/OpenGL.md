@@ -124,7 +124,7 @@ if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)){
 
 Proc：是procedure，过程、函数的缩写
 
-🤔️这一步容易忘记，如果漏写，OpenGL函数就会报错！！
+🤔️<font color='red'>**这一步容易忘记，如果漏写，OpenGL函数就会报错！！**</font>
 
 #### （4）视口
 
@@ -272,6 +272,8 @@ glShaderSource(VS, 1, &vertexShaderSource, NULL);
 glCompileShader(VS);
 ```
 
+`glShaderSource`：第四个参数为字符串的长度，但若传入字符串是C风格字符串，则可以为"NULL"
+
 🤔️这里`glCreateShader`是通过返回值传递ID的，之前`glGenBuffers`是通过传入引用来传递ID的，这么设计的原因可能是：GenBuffers可以一次性创建多个buffer，所以不选择通过返回值（不然就得返回数组）来得到ID，而CreateShader一次只能创建一个Shader，所以通过返回值来传递ID
 
 `glShaderSource`将数据传递到VS对象上，这里第二个参数指定字符串的数量
@@ -347,7 +349,7 @@ glDrawArrays(GL_TRIANGLES, 0, 3);
 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 ```
 
-参数依次是：图元拓扑，绘制的顶点数（索引个数，重复的顶点也会算进去），索引的类型，EBO中的偏移量
+参数依次是：图元拓扑，绘制的顶点数（索引个数，重复的顶点也会算进去），索引的类型，EBO中的偏移量【这里如果索引使用的`GL_ELEMENT_ARRAY_BUFFER`，则直接填偏移量即可，否则得填指针】
 
 🤔️如何记忆`...Arrays`,`...Elements`：VBO对应的缓冲类型是`GL_ARRAY_BUFFER`，所以不用索引则是draw arrays；EBO对应的缓冲类型是`GL_ELEMENT_ARRAY_BUFFER`，所以用索引则是draw elements
 
@@ -386,3 +388,69 @@ glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 ```
 
 第一个参数用于指定要设置的面，可以是正面，背面，或者正背面；第二个参数指定渲染模式，包括绘制线（LINE），填充（FILL），绘制点（POINT）
+
+## C1 调试
+
+### 1.glGetError()
+
+```cpp
+GLenum glGetError();
+```
+
+`glGetError`只能返回最近发生的<u>一个</u>错误标志，而不能一次性返回所有可能的错误，并且会在调用后将该错误标志从OpenGL状态中清除 => 所以常规做法是：在可能发生错误的一系列OpenGL操作之间多次调用`glGetError`，以便获取多个错误
+
+输出调试信息时，可以使用两个实用的宏`__FILE__`、`__LINE__`，分别指对应的文件与行号
+
+### 2.调试输出
+
+暂时可以忽略，因为只在OpenGL4.3以及更高的版本中才成为OpenGL的核心特性，且低版本部分操作系统可能不支持；调试输出能够更详细地检测OpenGL执行期间的问题和错误
+
+### 3.调试着色器输出
+
+着色器没办法打断点，想要调试着色器，最好的方法是将变量传递到像素着色器，然后通过颜色值输出到屏幕，通过观察颜色来推导是否出错
+
+### 4.OpenGL GLSL参考编译器
+
+**Glslang**：GLSL语言校验器（GLSL Lang Validator）：能够检测着色器是否符合GLSL规范（虽然不能完全保证没有Bug）
+
+> 网址：https://www.khronos.org/opengles/sdk/tools/Reference-Compiler/
+>
+> Release资源包下载：https://github.com/KhronosGroup/glslang/releases
+
+可以通过homebrew安装glslang：`brew install glslang`
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308121732141.png" alt="截屏2023-08-12 17.32.26" style="zoom: 50%;" />
+
+```shell
+glslangValidator xxx.vert
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308121755628.png" alt="截屏2023-08-12 17.55.21" style="zoom:50%;" />
+
+没问题则不会返回任何信息，有报错则会输出详细信息如上👆
+
+### 5.帧缓冲输出
+
+就是将信息输出到帧缓冲中，思想就是把一些需要检验的信息通过像素颜色的形式输出到帧缓冲中，我们可以在屏幕右上角划分一片小区域输出这个帧缓冲，来进行相关调试
+
+比如可以将法线信息、纹理信息、阴影深度图等信息输出出来，看是否出现问题，以便程序员调试发现错误
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308121802320.png" alt="debugging_fbo_output" style="zoom: 100%;" />
+
+### 6.外部调试软件
+
+###### gDebugger、RenderDoc、CodeXL、NVIDIA Nsight
+
+外部调试软件：通常将它们自己注入到OpenGL驱动中，以拦截各种OpenGL调用，来提供大量的数据
+
+注意：不同调试软件受平台以及显卡的限制，只能在特定平台和显卡上发挥其功效
+
+**Mac平台调试图形应用程序**：【ChatGPT推荐】
+
+- <font color='purple'>**Render Doc**</font>
+- Xcode 和 Instruments
+  - Instruments作为Xcode内置的性能分析工具，能够分析CPU、内存、图形性能等
+  - 对于图形调试，你可以使用 Instruments 中的 "OpenGL ES Analyzer"（针对 OpenGL ES）或者 "Metal System Trace"（针对 Metal）工具来分析图形性能和资源使用情况
+- OpenGL Profiler
+  - macOS内置的图形分析工具，用于OpenGL应用程序的性能分析
+  - 也是内置在Xcode-Instruments中

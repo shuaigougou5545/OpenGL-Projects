@@ -27,8 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		941FD5FF2A85EB6500C932DD /* VS.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = VS.glsl; sourceTree = "<group>"; };
-		941FD6242A864DB800C932DD /* PS.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = PS.glsl; sourceTree = "<group>"; };
+		941FD5FF2A85EB6500C932DD /* VS.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = VS.vert; sourceTree = "<group>"; };
+		941FD6242A864DB800C932DD /* PS.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = PS.frag; sourceTree = "<group>"; };
 		94BC38D12A7FE11F0092A6A6 /* LearnOpenGL-01 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "LearnOpenGL-01"; sourceTree = BUILT_PRODUCTS_DIR; };
 		94BC38DC2A7FE1550092A6A6 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		94BC38DF2A7FE1FA0092A6A6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -54,8 +54,8 @@
 		941FD5FE2A85EA9700C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
-				941FD6242A864DB800C932DD /* PS.glsl */,
-				941FD5FF2A85EB6500C932DD /* VS.glsl */,
+				941FD6242A864DB800C932DD /* PS.frag */,
+				941FD5FF2A85EB6500C932DD /* VS.vert */,
 			);
 			path = Shaders;
 			sourceTree = "<group>";

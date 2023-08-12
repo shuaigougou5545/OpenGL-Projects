@@ -33,6 +33,7 @@
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		941FD6212A864C5200C932DD /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../../3rd_party/GLFW/lib/libglfw3.a; sourceTree = "<group>"; };
 		941FD6262A864DF300C932DD /* glad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glad.c; path = ../../3rd_party/GLAD/src/glad.c; sourceTree = "<group>"; };
+		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +53,7 @@
 		941FD6002A8649B200C932DD = {
 			isa = PBXGroup;
 			children = (
+				94FEA8222A878438003C8A3D /* Library */,
 				941FD6282A864F1B00C932DD /* Shaders */,
 				941FD6252A864DE300C932DD /* Reference */,
 				941FD60B2A8649B200C932DD /* Src */,
@@ -99,6 +101,14 @@
 			children = (
 			);
 			path = Shaders;
+			sourceTree = "<group>";
+		};
+		94FEA8222A878438003C8A3D /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				94FEA8232A87849D003C8A3D /* DebugFunction.h */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
