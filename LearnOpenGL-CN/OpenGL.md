@@ -389,6 +389,78 @@ glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
 第一个参数用于指定要设置的面，可以是正面，背面，或者正背面；第二个参数指定渲染模式，包括绘制线（LINE），填充（FILL），绘制点（POINT）
 
+### 3.GLSL
+
+```cpp
+#version 330 core
+in type in_variable_name
+in type in_variable_name
+  
+out type out_variable_name
+
+uniform type uniform_variable_name
+  
+void main()
+{
+	// ...
+}
+```
+
+#### （1）in & out
+
+🤔️Godot-shader中使用`varying`关键词，用于在顶点着色器和像素着色器之间传递数据的关键词，与`out`关键词作用一致；`varying`和`out`在VS和PS之间传递数据时，都会进行**插值** 
+=> `varying`是在较低的OpenGL版本中使用，`out`是在后来的的OpenGL版本（OpenGL 3.3及之后）中使用，<font color="red">**更推荐使用`in`,`out`关键词控制数据传递方式**</font>
+
+每个着色器使用关键字`in`、`out`设定输入和输出，发送方着色器定义一个输出，则接收方着色器必须对应定义一个输入（**名称一样，类型一样**）
+
+=> 特殊的是：顶点着色器的输入和片段着色器的输出
+
+- 顶点着色器：是从顶点数据`layout(location = x)`中获取输入`in`
+- 像素着色器：要求输出一个`vec4`的颜色值（变量名自定义）
+
+我们能声明的顶点属性(Vertex Attribute)是有上限的，一般由硬件决定，但**至少有16个包含4分量的顶点属性可用**；可以通过`glGetIntergerv()`函数获取上限
+
+#### （2）uniform关键词
+
+```cpp
+int ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+glUniform4f(ourColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+```
+
+CPU向GPU着色器发送数据有两种方式：顶点属性、uniform
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308122317893.png" alt="截屏2023-08-12 23.17.42" style="zoom:40%;" />
+
+uniform变量使用方法：
+
+1. shader中定义uniform变量
+2. 查询：程序中利用函数`glGetUniformLocation`获取uniform变量的位置值
+3. 设置：利用函数`glUniform...`设置对应位置处uniform变量的值 
+   - uniform变量会一直保存它的数据，直到被重置或更新
+   - 函数后缀基本只有i和f，所以bool值的话也需要用整数i
+
+⚠️注意：设置uniform变量值时，必须调用`glUseProgram`，因为**设置的uniform变量是针对当前激活的着色器程序的**；查询位置值时，不需要`glUseProgram`，因为查询函数有两个参数，一个是着色器程序，一个是uniform变量名
+
+
+
+#### （3）GLSL基础
+
+基本数据类型：
+
+- `int`,`float`,`double`,`uint`,`bool` - `uint`：unsigned int
+- 向量
+  - `vecn`
+  - `bvecn`,`ivecn`,`uvecn`,`dvecn`
+
+分量可以任意重组，并可以用作初始化：
+
+```glsl
+vec4 v2 = v1.xxzy;
+vec4 v3 = vec4(v2.xyz, 1.0);
+```
+
+
+
 ## C1 调试
 
 ### 1.glGetError()
