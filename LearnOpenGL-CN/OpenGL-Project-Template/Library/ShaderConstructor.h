@@ -1,5 +1,5 @@
-#ifndef ShaderConstructor_hpp
-#define ShaderConstructor_hpp
+#ifndef ShaderConstructor_h
+#define ShaderConstructor_h
 
 #include <glad/glad.h>
 
@@ -15,6 +15,7 @@ public:
     
     ShaderConstructor(const char* vsPath, const char* fsPath);
     void use();
+    void destory();
     
     // set-uniform functions
     void setBool(const std::string &name, bool value) const;
@@ -22,4 +23,4 @@ public:
     void setFloat(const std::string &name, float value) const;
 };
 
-#endif /* ShaderConstructor_hpp */
+#endif /* ShaderConstructor_h */

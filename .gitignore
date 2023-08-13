@@ -1,0 +1,23 @@
+# Xcode
+.DS_Store
+*/.DS_Store
+*.xcuserstate
+*.xcworkspace
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build
+
+# Swift Package Manager
+.build/
+
+# macOS
+.idea/
+*.swp
+*~
+__pycache__/

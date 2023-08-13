@@ -441,8 +441,6 @@ uniform变量使用方法：
 
 ⚠️注意：设置uniform变量值时，必须调用`glUseProgram`，因为**设置的uniform变量是针对当前激活的着色器程序的**；查询位置值时，不需要`glUseProgram`，因为查询函数有两个参数，一个是着色器程序，一个是uniform变量名
 
-
-
 #### （3）GLSL基础
 
 基本数据类型：

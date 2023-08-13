@@ -1,4 +1,4 @@
-#include "ShaderConstructor.hpp"
+#include "ShaderConstructor.h"
 
 
 ShaderConstructor::ShaderConstructor(const char* vsPath, const char* fsPath)
@@ -74,6 +74,11 @@ ShaderConstructor::ShaderConstructor(const char* vsPath, const char* fsPath)
 void ShaderConstructor::use()
 {
     glUseProgram(ID);
+}
+
+void ShaderConstructor::destory()
+{
+    glDeleteProgram(ID);
 }
 
 void ShaderConstructor::setBool(const std::string &name, bool value) const
