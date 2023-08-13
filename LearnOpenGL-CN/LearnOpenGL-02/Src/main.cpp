@@ -3,21 +3,8 @@
 
 #include <iostream>
 
-using std::cout; using std::endl;
-
-const char* vertexShaderSource = "#version 330 core\n"
-    "layout(location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\n";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-    "out vec4 fragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   fragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n";
+#include "DebugFunction.h"
+#include "ShaderConstructor.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -46,19 +33,19 @@ int main()
         return -1;
     }
     
+    // vertex input:
     float vertices[] = {
-        0.5f, 0.5f, 0.0f, // 右上
-        -0.5f, 0.5f, 0.0f, // 左上
-        -0.5f, -0.5f, 0.0f, // 左下
-        0.5f, -0.5f, 0.0f, // 右下
+        -0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
     };
     
     unsigned int indices[] = {
-        0, 3, 1,
-        1, 3, 2,
+        0, 1, 2,
     };
     
     unsigned int VAO, VBO, EBO;
+    
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -69,7 +56,6 @@ int main()
     
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     
@@ -77,41 +63,29 @@ int main()
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
-    
-    unsigned int VS, PS, SP;
-    VS = glCreateShader(GL_VERTEX_SHADER);
-    PS = glCreateShader(GL_FRAGMENT_SHADER);
-    SP = glCreateProgram();
-    
-    glShaderSource(VS, 1, &vertexShaderSource, NULL);
-    glShaderSource(PS, 1, &fragmentShaderSource, NULL);
-    
-    glCompileShader(VS);
-    glCompileShader(PS);
-    
-    glAttachShader(SP, VS);
-    glAttachShader(SP, PS);
-    
-    glLinkProgram(SP);
-    glDeleteShader(VS);
-    glDeleteShader(PS);
+    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
     
     while(!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        glUseProgram(SP);
+        float t = glfwGetTime();
+        sc.use();
+        sc.setVec2("offset", std::sin(t)/5.0, std::cos(t)/5.0);
+        
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
     
-    glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(SP);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &VAO);
+    sc.destory();
     
     glfwTerminate();
     return 0;

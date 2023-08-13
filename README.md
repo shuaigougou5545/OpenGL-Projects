@@ -48,6 +48,8 @@ For OpenGL Learning
 
 #### 🚌快速创建工程：
 
-为了方便，提供了模版工程`OpenGL-Project-Template`，复制模版工程的文件夹，然后打开工程，进入工程设置，在点击PROJECT，然后在右侧修改Name，然后会一并修改所有该文件夹下相关名字
+为了方便，提供了模版工程`OpenGL-Project-Template`，复制模版工程的文件夹，然后先修改文件夹名
+
+然后打开工程，进入工程设置，在点击PROJECT，然后在右侧修改Name，然后会一并修改所有该文件夹下相关名字
 
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308111926101.png" alt="截屏2023-08-11 19.26.02" style="zoom:30%;" />

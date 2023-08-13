@@ -12,6 +12,7 @@
 		941FD61B2A864A3800C932DD /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD61A2A864A3800C932DD /* IOKit.framework */; };
 		941FD6222A864C5200C932DD /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD6212A864C5200C932DD /* libglfw3.a */; };
 		941FD6272A864DF300C932DD /* glad.c in Sources */ = {isa = PBXBuildFile; fileRef = 941FD6262A864DF300C932DD /* glad.c */; };
+		94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,6 +34,11 @@
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		941FD6212A864C5200C932DD /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../../3rd_party/GLFW/lib/libglfw3.a; sourceTree = "<group>"; };
 		941FD6262A864DF300C932DD /* glad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glad.c; path = ../../3rd_party/GLAD/src/glad.c; sourceTree = "<group>"; };
+		94AB12A22A887DC10004D601 /* ShaderConstructor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderConstructor.h; sourceTree = "<group>"; };
+		94AB12A32A887E920004D601 /* VS.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = VS.vert; sourceTree = "<group>"; };
+		94AB12A42A887E920004D601 /* FS.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = FS.frag; sourceTree = "<group>"; };
+		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
+		94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderConstructor.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +58,7 @@
 		941FD6002A8649B200C932DD = {
 			isa = PBXGroup;
 			children = (
+				94FEA8222A878438003C8A3D /* Library */,
 				941FD6282A864F1B00C932DD /* Shaders */,
 				941FD6252A864DE300C932DD /* Reference */,
 				941FD60B2A8649B200C932DD /* Src */,
@@ -97,8 +104,20 @@
 		941FD6282A864F1B00C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				94AB12A42A887E920004D601 /* FS.frag */,
+				94AB12A32A887E920004D601 /* VS.vert */,
 			);
 			path = Shaders;
+			sourceTree = "<group>";
+		};
+		94FEA8222A878438003C8A3D /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				94FEA8232A87849D003C8A3D /* DebugFunction.h */,
+				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
+				94AB12A22A887DC10004D601 /* ShaderConstructor.h */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -159,6 +178,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				941FD60D2A8649B200C932DD /* main.cpp in Sources */,
+				94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */,
 				941FD6272A864DF300C932DD /* glad.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
