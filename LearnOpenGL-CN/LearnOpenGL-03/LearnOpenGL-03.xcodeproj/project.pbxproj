@@ -29,7 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		941FD6092A8649B200C932DD /* OpenGL-Project-Template */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenGL-Project-Template"; sourceTree = BUILT_PRODUCTS_DIR; };
+		941FD6092A8649B200C932DD /* LearnOpenGL-03 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "LearnOpenGL-03"; sourceTree = BUILT_PRODUCTS_DIR; };
 		941FD60C2A8649B200C932DD /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		941FD6142A864A0F00C932DD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -42,6 +42,7 @@
 		94AB12B12A88CAA00004D601 /* glad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = glad.c; path = ../../../3rd_party/GLAD/src/glad.c; sourceTree = "<group>"; };
 		94AB12B32A88CB870004D601 /* wall.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wall.jpg; sourceTree = "<group>"; };
 		94AB12B42A88D6860004D601 /* container.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = container.jpg; sourceTree = "<group>"; };
+		94AB12B52A88E0FF0004D601 /* awesomeface.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = awesomeface.png; sourceTree = "<group>"; };
 		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
 		94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderConstructor.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,7 +77,7 @@
 		941FD60A2A8649B200C932DD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				941FD6092A8649B200C932DD /* OpenGL-Project-Template */,
+				941FD6092A8649B200C932DD /* LearnOpenGL-03 */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -111,6 +112,7 @@
 		94AB12A52A888FAE0004D601 /* Textures */ = {
 			isa = PBXGroup;
 			children = (
+				94AB12B52A88E0FF0004D601 /* awesomeface.png */,
 				94AB12B42A88D6860004D601 /* container.jpg */,
 				94AB12B32A88CB870004D601 /* wall.jpg */,
 			);
@@ -140,9 +142,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		941FD6082A8649B200C932DD /* OpenGL-Project-Template */ = {
+		941FD6082A8649B200C932DD /* LearnOpenGL-03 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "OpenGL-Project-Template" */;
+			buildConfigurationList = 941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "LearnOpenGL-03" */;
 			buildPhases = (
 				941FD6052A8649B200C932DD /* Sources */,
 				941FD6062A8649B200C932DD /* Frameworks */,
@@ -152,9 +154,9 @@
 			);
 			dependencies = (
 			);
-			name = "OpenGL-Project-Template";
+			name = "LearnOpenGL-03";
 			productName = "OpenGL-Project-Template";
-			productReference = 941FD6092A8649B200C932DD /* OpenGL-Project-Template */;
+			productReference = 941FD6092A8649B200C932DD /* LearnOpenGL-03 */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -171,7 +173,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 941FD6042A8649B200C932DD /* Build configuration list for PBXProject "OpenGL-Project-Template" */;
+			buildConfigurationList = 941FD6042A8649B200C932DD /* Build configuration list for PBXProject "LearnOpenGL-03" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -184,7 +186,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				941FD6082A8649B200C932DD /* OpenGL-Project-Template */,
+				941FD6082A8649B200C932DD /* LearnOpenGL-03 */,
 			);
 		};
 /* End PBXProject section */
@@ -346,7 +348,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		941FD6042A8649B200C932DD /* Build configuration list for PBXProject "OpenGL-Project-Template" */ = {
+		941FD6042A8649B200C932DD /* Build configuration list for PBXProject "LearnOpenGL-03" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				941FD60E2A8649B200C932DD /* Debug */,
@@ -355,7 +357,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "OpenGL-Project-Template" */ = {
+		941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "LearnOpenGL-03" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				941FD6112A8649B200C932DD /* Debug */,

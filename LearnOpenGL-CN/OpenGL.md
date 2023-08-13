@@ -457,7 +457,158 @@ vec4 v2 = v1.xxzy;
 vec4 v3 = vec4(v2.xyz, 1.0);
 ```
 
+### 4.纹理
 
+#### （0）纹理使用基本流程
+
+```cpp
+//
+// texture
+//
+unsigned int texture;
+glGenTextures(1, &texture);
+glBindTexture(GL_TEXTURE_2D, texture);
+
+// 纹理环绕方式和过滤方式,都是设置到当前绑定对象上
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+int width, height, nrChannels;
+unsigned char *data = stbi_load("./Textures/wall.jpg", &width, &height, &nrChannels, 0);
+if(data)
+{
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
+else
+{
+    std::cout << "ERROR [texture]: failed to load texture" << std::endl;
+}
+stbi_image_free(data);
+```
+
+#### （1）纹理环绕方式 - wrap
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+```
+
+处理纹理坐标范围(0,0)~(1,1)之外的情况，环绕方式有：
+
+- `GL_REPEAT`：重复
+- `GL_MIRRORED_REPEAT`：镜像重复
+- `GL_CLAMP_TO_EDGE`：clamp
+- `GL_CLAMP_TO_BORDER`：超出范围以指定颜色
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308131225122.png" alt="截屏2023-08-13 12.25.28" style="zoom:40%;" />
+
+纹理坐标：s、t、r（3D坐标）=> **OpenGL能为纹理的各个坐标轴分别设置环绕方式**
+
+`glTexParameteri`：用于设置整数相关的纹理参数，`...f`：用于设置浮点数相关的纹理参数，比如各向异性度参数；`...fv`：用于设置浮点数数组相关的纹理参数，比如设置`GL_CLAMP_TO_BORDER`相关颜色
+
+#### （2）纹理过滤 - filter
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```
+
+纹理过滤：如何将纹理坐标映射到对应纹理像素
+
+- `GL_NEAREST`：邻近过滤
+- `GL_LINEAR`：线性过滤
+
+考虑两种情况：**放大`Magnify`、缩小`Minify`** => 比如，放大是指物体很大，但纹理分辨率很小（也就是人走近物体）=> **OpenGL能分别为纹理的放大和缩小两种情况分别设置纹理过滤方式**
+
+🤔️纹理过滤往往处理的是放大的情况，放大后需要线性过滤，不然像素过渡不平滑情况被放大了
+
+#### （3）多级渐远纹理（Mipmap）
+
+```cpp
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```
+
+⚠️**注意：mipmap只针对“缩小”`min`操作才有用，<font color='red'>对放大操作没效果</font>，且会报错👆**
+
+```cpp
+glGenerateMipmaps
+```
+
+`glGenerateMipmaps`：OpenGL提供函数来对图像生成mipmap
+
+若使用Mipmap，则过滤方式将会改变，因为原先只在一张纹理上采样，现在有多张纹理可供采样，所以OpenGL提供如下，mipmap纹理过滤方式：
+
+- `GL_NEAREST_MIPMAP_NEAREST`
+- `GL_LINEAR_MIPMAP_NEAREST`
+- `GL_NEAREST_MIPMAP_LINEAR`
+- `GL_LINEAR_MIPMAP_LINEAR`
+
+`GL_方式1_MIPMAP_方式2`：方式1为纹理采样方式，方式2为如何选择mipmap级别
+
+mipmap提供多分辨率的纹理，主要作用于缩小的情况，因为对于缩小的情况还用原先大分辨率的贴图，好处：一是浪费GPU缓存，减少纹理采样、过滤、插值等计算成本；二是不够准确，因为可能轻轻移动采样到纹理上截然不同的纹素点
+
+🤔️性能分析：mipmap具体流程：当我们生成mipmap时，会将多张不同分辨率的纹理一同加载进GPU显存中，加载是一次性的，虽然加载会比普通纹理加载慢，但是mipmap能在渲染过程中**显著提高性能**，尤其是对于**远处渲染**而言：低分辨率纹理会带来：较少的纹理采样计算，更少的插值操作（因为我们会选择临近过滤），减少**纹理缓存**开销（纹理采样时会从GPU显存转移到GPU缓存中）
+
+#### （4）加载纹理 - <font color='green'>stb_image.h</font>
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308131606117.png" alt="截屏2023-08-13 16.06.06" style="zoom:50%;" />
+
+```cpp
+int width, height, nrChannels;
+unsigned char *data = stbi_load("./Textures/wall.jpg", &width, &height, &nrChannels, 0);
+...
+stbi_image_free(data);
+```
+
+`stbi_load()`：会将图像的宽度、高度、颜色通道的个数；`stbi_image_free()`释放图像内存
+
+🤔️`stbi_load()`函数返回值是`unsigned char`数组，因为：**unsigned char是无符号字符范围是0~255(1字节8位)，刚好能表示颜色值**，所以这里用的是`unsigned char`
+
+#### （5）使用纹理
+
+```cpp
+unsigned int texture;
+glGenTextures(1, &texture);
+glBindTexture(GL_TEXTURE_2D, texture);
+... // 过滤方式、环绕方式
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+glGenerateMipmap(GL_TEXTURE_2D);
+
+...
+
+```
+
+用法与缓冲区对象类似，都是先`glGen...`函数创建，然后绑定`glBind...`到对应类型，然后传递数据`glTexImage2D`
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308131655129.png" alt="截屏2023-08-13 16.55.18" style="zoom:50%;" />
+
+第二个参数也就是`level`，就是其所处在mipmap中的级别，我们可以依次设置当前纹理的不同级别图像，我们也可以只设置最基本级别`0`，然后通过`glGenerateMipmap()`函数为我们自动创建所需要的mipmap
+
+如何在shader中使用纹理，并使用多张纹理：如前文所述，我们使用`glBindTexture(GL_TEXTURE_2D, texture)`来将纹理绑定到`GL_TEXTURE_2D`上，这么看似只能绑定一张纹理，实则不然：纹理还有一个概念，叫做**纹理单元（Texture Unit）**，比如：
+
+```cpp
+glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
+glBindTexture(GL_TEXTURE_2D, texture);
+glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); 
+```
+
+也就是说，我们实际是将纹理绑定到**当前激活的纹理单元上**，`GL_TEXTURE0`是默认激活的，所以只用一张纹理时不用`glActiveTexture`操作；同时，需要通过`glGetUniformLocation()`找到采样器位置，然后通过`glUniform1i()`设置int值，该int值就是对应的纹理单元
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308131722286.png" alt="截屏2023-08-13 17.21.57" style="zoom:50%;" />
+
+总结一下：shader中使用纹理
+
+- 采样器sampler：`sampler2D`...
+  - 采样器会存储采样的相关配置（比如：环绕方式、过滤方式）
+- 纹理单元：`GL_TEXTURE0`...
+  - 纹理单元是指GPU上存储纹理数据的一块资源
+  - 一个纹理单元上可以绑定一个采样器，这样该纹理单元就能被用于渲染管线中的采样纹理操作
+- 纹理目标/类型：`GL_TEXTURE_2D`
+  - 纹理目标用来指示纹理数据存储格式和用途
 
 ## C1 调试
 
