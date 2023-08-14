@@ -110,3 +110,19 @@ void ShaderConstructor::setVec4(const std::string& name, float value1, float val
 {
     glUniform4f(glGetUniformLocation(ID, name.c_str()), value1, value2, value3, value4);
 }
+
+void ShaderConstructor::setMat2(const std::string &name, const float *value) const
+{
+    glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+}
+
+void ShaderConstructor::setMat3(const std::string &name, const float *value) const
+{
+    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+}
+
+void ShaderConstructor::setMat4(const std::string &name, const float *value) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value);
+}
+

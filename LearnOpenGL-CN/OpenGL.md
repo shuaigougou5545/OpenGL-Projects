@@ -425,6 +425,8 @@ void main()
 ```cpp
 int ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
 glUniform4f(ourColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+// 矩阵:【参数分别是:location、矩阵个数、矩阵是否需要转置(默认:列主序)、float数组指针】
+glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, value); 
 ```
 
 CPU向GPU着色器发送数据有两种方式：顶点属性、uniform
@@ -609,6 +611,32 @@ glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
   - 一个纹理单元上可以绑定一个采样器，这样该纹理单元就能被用于渲染管线中的采样纹理操作
 - 纹理目标/类型：`GL_TEXTURE_2D`
   - 纹理目标用来指示纹理数据存储格式和用途
+
+### 5.数学库 GLM
+
+GLM：OpenGL Mathematics，只有头文件的库，不需要链接和编译，它的变量命名方式与OpenGL基本对齐，方便使用
+
+```cpp
+glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+glm::mat4 trans = glm::mat4(1.0f); // 单位矩阵
+```
+
+提供`scale`、`rotate`、`translate`三个函数用于生成SRT矩阵，这里函数的作用是在trans的基础上右乘一个变化矩阵（也就是说它和常规相反）
+
+```cpp
+// SRT
+trans = glm::translate(trans, glm::vec3(1.0f, 0.0f, 0.0f));
+trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+```
+
+矩阵与向量乘法：向量一般视为列向量，所以需要左乘变化矩阵
+
+```cpp
+v = trans * v;
+```
+
+
 
 ## C1 调试
 

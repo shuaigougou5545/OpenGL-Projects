@@ -116,15 +116,31 @@ int main()
     ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
     
     
+    //
+    // Math Opeartion
+    //
+    glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+    glm::mat4 trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.2f, 0.0f, 0.0f));
+    trans = glm::rotate(trans, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+    v = trans * v;
+    
+    
+    //
+    // settings
+    //
+    sc.use();
+    sc.setMat4("transform", glm::value_ptr(trans));
+    glBindTexture(GL_TEXTURE_2D, texture);
+    
+    
     while(!glfwWindowShouldClose(window))
     {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        
-        sc.use();
-        glBindVertexArray(VAO);
-        glBindTexture(GL_TEXTURE_2D, texture);
     
+        glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         
         glfwSwapBuffers(window);
