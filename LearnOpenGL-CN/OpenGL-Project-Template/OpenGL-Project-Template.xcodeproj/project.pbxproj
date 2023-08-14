@@ -322,6 +322,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../3rd_party/GLAD/include",
 					"$(SRCROOT)/../../3rd_party/GLFW/include",
+					"$(SRCROOT)/../../3rd_party/GLM/include",
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../3rd_party/GLFW/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -337,6 +338,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../3rd_party/GLAD/include",
 					"$(SRCROOT)/../../3rd_party/GLFW/include",
+					"$(SRCROOT)/../../3rd_party/GLM/include",
 				);
 				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/../../3rd_party/GLFW/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";

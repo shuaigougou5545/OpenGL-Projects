@@ -6,4 +6,4 @@
 	url = https://github.com/shuaigougou5545/GLAD.git
 [submodule "3rd_party/GLM"]
 	path = 3rd_party/GLM
-	url = https://github.com/shuaigougou5545/GLM.git
+url=git@github.com:shuaigougou5545/GLM.git
