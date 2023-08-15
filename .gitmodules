@@ -7,3 +7,6 @@
 [submodule "3rd_party/GLM"]
 	path = 3rd_party/GLM
 url=git@github.com:shuaigougou5545/GLM.git
+[submodule "3rd_party/imgui"]
+	path = 3rd_party/imgui
+	url = git@github.com:shuaigougou5545/IMGUI.git
