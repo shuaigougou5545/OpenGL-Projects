@@ -44,6 +44,24 @@ For OpenGL Learning
 - OpenGL.framework：因为我们用了glad库，和这个框架作用一样，所以可以不加这个框架
 - GLUT.framework：GLUT也是一个管理窗口，便于OpenGL程序开发的库，跟GLFW库作用相同，因为我们引入了GLFW库，所以可以不加这个框架
 
+##### <font color='green'>Imgui</font>：
+
+- 需要用到的文件有：
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308151141496.png" alt="截屏2023-08-15 11.40.59" style="zoom:50%;" />
+
+- 去imgui官网下载文件夹，其中根目录下的文件是必须的，因为我们是OpenGL3+glfw环境，所以还需要backends文件夹下5个文件：`imgui_impl_glfw.cpp/.h`、`imgui_impl_opengl3.cpp/.h`、`imgui_impl_opengl3_loader.h`，整理好放在一个文件夹下后，通过`Create group`加入到xcode工程中即可
+
+- imgui相关用法参考`examples`文件夹下`...opengl3...`的`main.cpp`文件
+
+- 头文件包含：
+
+  ```cpp
+  #include "imgui.h"
+  #include "imgui_impl_glfw.h"
+  #include "imgui_impl_opengl3.h"
+  ```
+
 ---
 
 #### 🚌快速创建工程：

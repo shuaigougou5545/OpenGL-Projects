@@ -712,3 +712,97 @@ glslangValidator xxx.vert
 - OpenGL Profiler
   - macOS内置的图形分析工具，用于OpenGL应用程序的性能分析
   - 也是内置在Xcode-Instruments中
+
+## C2 imgui
+
+### 1.简单使用流程
+
+#### （1）头文件
+
+```cpp
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+```
+
+#### （2）初始化并配置imgui
+
+```cpp
+IMGUI_CHECKVERSION();
+```
+
+宏，用于检测使用的ImGui版本与代码是否兼容
+
+```cpp
+ImGui::CreateContext();
+```
+
+创建ImGui上下文，上下文一般用于管理状态和配置信息（同OpenGL上下文一样）
+
+```cpp
+ImGuiIO& io = ImGui::GetIO(); (void)io;
+```
+
+获取ImGui输入输出的结构体，包含了用户界面的各种配置；
+
+<font color='darkpink'>**`(void)io;`是一种trick写法，没有实际作用，是为了避免编译器报告未使用的变量警告**</font>
+
+```cpp
+io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+```
+
+Imgui开启键盘控制
+
+```cpp
+ImGui::StyleColorsDark();
+```
+
+设置ImGui的样式主题，这里是设置为暗色主题
+
+```cpp
+ImGui_ImplGlfw_InitForOpenGL(window, true);
+```
+
+这个函数的参数：传入一个glfw窗口的指针，和是否为ImGui注册事件回调函数，该函数让ImGui创建一个适合于在GLFW窗口中绘制的上下文，并起诶创建一个可交互的用户界面
+
+```cpp
+ImGui_ImplOpenGL3_Init("#version 330");
+```
+
+该函数需要传入一个GLSL版本号的常量字符串，用于指示Imgui在创建shader时应该使用哪个glsl版本的shader，让用户可以在渲染循环中使用Imgui相关函数来**渲染用户界面**
+
+#### （3）渲染主循环
+
+```cpp
+ImGui_ImplOpenGL3_NewFrame();
+ImGui_ImplGlfw_NewFrame();
+ImGui::NewFrame();
+```
+
+确保ImGui能正确协同OpenGL和GLFW进行渲染，`NewFrame()`用于开启新一帧的渲染，会清理上一针的绘制命令 => **需要在渲染循环迭代开头调用这三个函数**
+
+```cpp
+ImGui::Render();
+```
+
+在调用ImGui渲染指令后调用该函数，会真正实行这些渲染指令并绘制UI到后台缓冲区中 => **需要在渲染循环结束时调用这个函数**
+
+<font color='purple'>**渲染指令**</font>
+
+```cpp
+ImGui::Begin("window name");
+... // 各种控件,比如SliderFloat,CheckBox...
+ImGui::End();
+```
+
+`Begin()`和`End()`之间是一个窗口组件，窗口中可以设置各种控件，这个就不一一介绍了，这些渲染指令调用需要在上述👆几个函数之间使用
+
+**DemoWindow**
+
+```cpp
+ImGui::ShowDemoWindow();
+```
+
+ImGui提供一个已经创建好的demo-window，我们可以通过这一个函数来创建它辅助我们使用Imgui
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308151247073.png" alt="截屏2023-08-15 12.47.03" style="zoom:50%;" />
