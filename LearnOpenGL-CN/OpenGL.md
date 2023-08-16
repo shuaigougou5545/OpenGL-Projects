@@ -645,7 +645,36 @@ v = trans * v;
 - 正交投影：`glm::ortho()`
 - 透射投影：`glm::perspective()`
 
+### 7.深度缓冲（Z-buffer）
 
+```cpp
+glEnable(GL_DEPTH_TEST);
+
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+```
+
+深度测试默认是关闭的，通过`glEnable()`开启；每次渲染迭代中需要清除深度缓冲，和颜色缓冲一样，不然就会保存上一帧的数据
+
+### 8.camera
+
+#### （1）Look At
+
+```cpp
+glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f);
+glm::vec3 cameraTarget = glm::vec3(0.f, 0.f, 0.f);
+glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
+glm::vec3 cameraRight = glm::cross(up, cameraDirection);
+glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+```
+
+摄像机坐标系中观察方向（-z轴）是确定的，竖直向上方向大致确定（在yoz平面内），因此根据基向量的正交性，能够得到x方向的方向垂直于yoz平面内，可以由叉乘得到
+
+```cpp
+glm::lookAt(glm::vec3 eye, glm::vec3 target, glm::vec3 up);
+```
+
+`glm::LookAt()`函数能简化上述步骤：只需要提供摄像机位置、观察位置和向上坐标
 
 ## C1 调试
 
@@ -808,3 +837,13 @@ ImGui::ShowDemoWindow();
 ImGui提供一个已经创建好的demo-window，我们可以通过这一个函数来创建它辅助我们使用Imgui
 
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308151247073.png" alt="截屏2023-08-15 12.47.03" style="zoom:50%;" />
+
+## Q1 多线程
+
+#### （1）渲染&窗口处理
+
+当窗口事件处理和渲染在同一主线程中执行时，拖动窗口会导致主线程被阻塞，这样就会出现：拖动窗口时，渲染停止运行，直到拖动操作结束
+
+解决方法：将窗口事件处理和渲染分离到不同的线程中 -- 比如，创建一个线程专门用于渲染，窗口事件就放在主线程中【要求：UI事件（GLFW窗口事件）必须放在主线程中】
+
+TODO：将窗口事件处理和渲染分离到不同的线程中

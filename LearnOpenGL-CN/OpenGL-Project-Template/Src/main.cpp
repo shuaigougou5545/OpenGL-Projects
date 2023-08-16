@@ -8,6 +8,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include <iostream>
+#include <thread>
 
 #include "DebugFunction.h"
 #include "ShaderConstructor.h"
@@ -26,7 +27,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
     
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if(!window)
     {
         glfwTerminate();
@@ -60,43 +61,48 @@ int main()
     // vertex input:
     //
     float vertices[] = {
-        // Front face
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
         -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
          0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
          0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        
-        // Back face
-        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        
-        // Left face
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
-        
-        // Right face
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
-        
-        // Top face
-        -0.5f,  0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 0.0f,
          0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
         -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        
-        // Bottom face
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 1.0f,
-    };
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
     
     unsigned int indices[] = {}; (void)indices;
     
@@ -160,10 +166,11 @@ int main()
     
     
     //
-    // settings
+    // other
     //
     sc.use();
     glBindTexture(GL_TEXTURE_2D, texture);
+    glEnable(GL_DEPTH_TEST);
     
     
     while(!glfwWindowShouldClose(window))
@@ -173,39 +180,40 @@ int main()
         glm::mat4 model, view, projection;
         model = view = projection = glm::mat4(1.0);
         
-        static float T[3] = { 0.f, 0.f, 0.f };
-        static float angle = 0.f;
-        static float axis[3] = { 0.f, 0.f, 1.f };
-        static float S[3] = { 0.f, 0.f, 0.f };
-        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::Begin("Settings");
+        ImGui::Begin("OpenGL");
         
         ImGui::ColorEdit3("clear color", (float*)&clear_color);
-
-        ImGui::InputFloat3("Transform", T);
-        ImGui::SliderAngle("Rotate Angle", &angle);
-        ImGui::InputFloat3("Rotate Axis", axis);
-        ImGui::InputFloat3("Scale", S);
         
-
+        int window_width = 0, window_height = 0;
+        glfwGetWindowSize(window, &window_width, &window_height);
+        ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        
         ImGui::End();
         ImGui::Render();
         
-        model = glm::translate(model, glm::vec3(T[0], T[1], T[2]));
-        model = glm::rotate(model, glm::radians(angle), glm::vec3(axis[0], axis[1], axis[2]));
-        model = glm::scale(model, glm::vec3(S[0], S[1], S[2]));
+        
+        glm::vec3 trans = glm::vec3(0.f, 0.f, -5.f);
+        float angle = glfwGetTime() * 50.0;
+        glm::vec3 rotate_axis = glm::vec3(0.5f, 0.5f, 0.f);
+        glm::vec3 scale = glm::vec3(1.f);
+        model = glm::translate(model, trans);
+        
+        model = glm::rotate(model, glm::radians(angle), rotate_axis);
+        model = glm::scale(model, scale);
+        view = glm::lookAt(glm::vec3(0.f, 0.f, 3.f), glm::vec3(0.f), glm::vec3(0.f, 1.f, 0.f));
+        projection = glm::perspective(glm::radians(45.f), (float)window_width / window_height, 0.1f, 100.f);
+    
         
         sc.setMat4("model", glm::value_ptr(model));
         sc.setMat4("view", glm::value_ptr(view));
         sc.setMat4("projection", glm::value_ptr(projection));
         
-        
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
         glBindVertexArray(VAO);
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
