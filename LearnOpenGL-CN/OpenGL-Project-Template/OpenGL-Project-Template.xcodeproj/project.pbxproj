@@ -60,6 +60,7 @@
 		9457067E2A8B249600C1D597 /* imgui_impl_glfw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_impl_glfw.cpp; sourceTree = "<group>"; };
 		9457067F2A8B249600C1D597 /* imgui_demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_demo.cpp; sourceTree = "<group>"; };
 		945706802A8B249600C1D597 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
+		945851322A8E2C70008E7FAB /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
 		94AB12A22A887DC10004D601 /* ShaderConstructor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderConstructor.h; sourceTree = "<group>"; };
 		94AB12A32A887E920004D601 /* VS.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = VS.vert; sourceTree = "<group>"; };
 		94AB12A42A887E920004D601 /* FS.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = FS.frag; sourceTree = "<group>"; };
@@ -1075,6 +1076,7 @@
 				94FEA8232A87849D003C8A3D /* DebugFunction.h */,
 				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
 				94AB12A22A887DC10004D601 /* ShaderConstructor.h */,
+				945851322A8E2C70008E7FAB /* Camera.h */,
 			);
 			path = Library;
 			sourceTree = "<group>";

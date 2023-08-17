@@ -676,6 +676,12 @@ glm::lookAt(glm::vec3 eye, glm::vec3 target, glm::vec3 up);
 
 `glm::LookAt()`函数能简化上述步骤：只需要提供摄像机位置、观察位置和向上坐标
 
+#### （2）欧拉角
+
+欧拉角：俯仰角（Pitch）、偏航角（Yaw）、滚转角（Roll）
+
+Pitch（y轴）一般不能接近90度，原因：欧拉角万向锁死问题
+
 ## C1 调试
 
 ### 1.glGetError()
