@@ -215,6 +215,12 @@ VBO的作用是将顶点数据一次性发送到显存（GPU内存）上
 - `GL_DYNAMIC_DRAW`：数据周期性地改变，但频率不高
 - `GL_STREAM_DRAW`：数据每次绘制都会改变
 
+💡如果想要用vector作为顶点数据的存储容器，依旧可以，只需对`glBufferData`稍作改动：
+
+```cpp
+glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+```
+
 #### （2）EBO/IBO
 
 EBO与VBO的函数调用基本一致，因为都是BO（Buffer Object）缓冲对象，唯一不同点是缓冲类型是`GL_ELEMENT_ARRAY_BUFFER`
@@ -681,6 +687,75 @@ glm::lookAt(glm::vec3 eye, glm::vec3 target, glm::vec3 up);
 欧拉角：俯仰角（Pitch）、偏航角（Yaw）、滚转角（Roll）
 
 Pitch（y轴）一般不能接近90度，原因：欧拉角万向锁死问题
+
+欧拉角直观的表达了视角移动的角度，我们通过记录欧拉角，最后手动转换为view坐标系和view矩阵
+
+### 9.光照
+
+#### （0）光照模型
+
+常见的光照模型：
+
+- Phong
+- BlinnPhong
+
+BlinnPhong相比于Phong模型来说，共同点是：都是ambient、diffuse和specular；区别是：blinnphong引入半程向量计算高光项、引入菲涅尔反射
+
+#### （1）Phong光照模型
+
+- ambient
+
+  - ```
+    vec3 ambient = lightCol * ambientStren * albedo;
+    ```
+
+- diffuse 
+
+- specular
+
+#### （2）Blinn Phong光照模型
+
+公式：
+$$
+LitColor=c_a+c_d+c_s
+\\ = A_L\otimes m_d+max(L\cdot n,0)\cdot B_L\otimes(m_d + R_F(\alpha_h)\frac{m+8}{8}(n\cdot h)^m)
+$$
+m<sub>d</sub>：漫反射反射率，是指被反射的入射光量 => ambient和diffuse都采用diffuse albedo这个参数，是因为他们其实都是表示“漫反射”的结果，只是diffuse是由直接光照产生的，而ambient是由间接光照产生的【这里说的不准确，只是便于理解，因为BlinnPhong模型本身就是一种抽象假设，并不具有完全正确的物理意义】
+
+max(L⋅n, 0)：朗伯余弦定理，是指光线达到平面时，平面接受到的能量和夹角的关系 => 这里ambient不用是因为环境光来自四面八方，而diffuse和specular来自直接光源，且是单向光源
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308182010426.png" alt="截屏2023-08-18 20.09.59" style="zoom: 50%;" />：菲涅尔效应&半程向量：
+
+#### （2）特殊：法向量的转换
+
+<font color='red'>**法向量之所以特殊，是因为它是从属于顶点位置的**</font>，也就是说，先有顶点位置，才有法向量；特殊地，当我们对顶点数据进行了**不等比缩放**时，对法向量进行同等变换，会让法向量不再垂直于顶点平面
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308181301498.png" alt="basic_lighting_normal_transformation" style="zoom: 100%;" />
+
+所以说我们需要对法向量定制一个特殊的模型矩阵(model) - 法线矩阵：
+$$
+M_{normal}=(M^{-1})^T
+$$
+ps：矩阵求逆在shader中是很大的开销，最好在cpu上算出法线矩阵，并传进来
+
+🤔️**推理**：切线和顶点是对应关系，也就是说，对顶点的变换也就是对切线的变换，公式如下：
+$$
+t = p_1-p_2
+\\ T = M p_1-M p_2 =M t
+$$
+又因为切线t和法线n是始终垂直的，所以：
+$$
+n\cdot t=0
+\\ N\cdot T=0
+\\ \therefore (M_{n} n)\cdot(M t)=0
+\\ (M_nn)^T(Mt)=0
+\\ n^T(M_n^TM)t=0
+$$
+那这里就有一个trick了，因为这个公式并不能推出M<sub>n</sub><sup>T</sup>M为单位矩阵；但是，这个式子为单位矩阵时，确实让等式成立了，所以说这个做法是可取的，我们构造了一个法线矩阵：
+$$
+M_n = (M^{-1})^T
+$$
+
 
 ## C1 调试
 

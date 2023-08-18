@@ -11,6 +11,7 @@
 		941FD6152A864A0F00C932DD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD6142A864A0F00C932DD /* Cocoa.framework */; };
 		941FD61B2A864A3800C932DD /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD61A2A864A3800C932DD /* IOKit.framework */; };
 		941FD6222A864C5200C932DD /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD6212A864C5200C932DD /* libglfw3.a */; };
+		9431E3E02A8FAC0B00938A6B /* ShapeGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9431E3DF2A8FAC0B00938A6B /* ShapeGenerator.cpp */; };
 		945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706722A8B249600C1D597 /* imgui_widgets.cpp */; };
 		945706822A8B249600C1D597 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706782A8B249600C1D597 /* imgui.cpp */; };
 		945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067B2A8B249600C1D597 /* imgui_impl_opengl3.cpp */; };
@@ -42,6 +43,8 @@
 		941FD6142A864A0F00C932DD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		941FD6212A864C5200C932DD /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../../3rd_party/GLFW/lib/libglfw3.a; sourceTree = "<group>"; };
+		9431E3DE2A8FABE900938A6B /* ShapeGenerator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShapeGenerator.h; sourceTree = "<group>"; };
+		9431E3DF2A8FAC0B00938A6B /* ShapeGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShapeGenerator.cpp; sourceTree = "<group>"; };
 		9457066F2A8B249600C1D597 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		945706702A8B249600C1D597 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		945706712A8B249600C1D597 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -1077,6 +1080,8 @@
 				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
 				94AB12A22A887DC10004D601 /* ShaderConstructor.h */,
 				945851322A8E2C70008E7FAB /* Camera.h */,
+				9431E3DE2A8FABE900938A6B /* ShapeGenerator.h */,
+				9431E3DF2A8FAC0B00938A6B /* ShapeGenerator.cpp */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -1146,6 +1151,7 @@
 				941FD60D2A8649B200C932DD /* main.cpp in Sources */,
 				945706862A8B249600C1D597 /* imgui_demo.cpp in Sources */,
 				945706842A8B249600C1D597 /* imgui_tables.cpp in Sources */,
+				9431E3E02A8FAC0B00938A6B /* ShapeGenerator.cpp in Sources */,
 				94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */,
 				94AB14602A89CB2A0004D601 /* glm.cpp in Sources */,
 				945706822A8B249600C1D597 /* imgui.cpp in Sources */,
