@@ -14,6 +14,7 @@
 #include "DebugFunction.h"
 #include "Camera.h"
 #include "ShaderConstructor.h"
+#include "ShapeGenerator.h"
 #include "stb_image.h"
 
 
@@ -30,6 +31,18 @@ float deltaTime = 0.f;
 float lastFrame = 0.f;
 // button
 bool leftMouseButtonPressed = false;
+
+// shader struct
+struct Light{
+    glm::vec3 position;
+    glm::vec3 color;
+};
+
+struct Material{
+    glm::vec3 diffuseAlbedo;
+    glm::vec3 fresnelR0;
+    float roughness;
+};
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -85,52 +98,7 @@ int main()
     //
     // vertex input:
     //
-    std::vector<float> vertices =
-    {
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
-    
-    std::vector<unsigned int> indices = {}; (void)indices;
+    Box box;
     
     
     //
@@ -146,8 +114,8 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, box.vertices.size() * sizeof(float), box.vertices.data(), GL_STATIC_DRAW);
+//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, box.indices.size() * sizeof(unsigned int), box.indices.data(), GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -200,7 +168,6 @@ int main()
     glEnable(GL_DEPTH_TEST);
     
     
-    
     while(!glfwWindowShouldClose(window))
     {
         float currentFrame = static_cast<float>(glfwGetTime());
@@ -244,19 +211,31 @@ int main()
         view = camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
     
-        
         sc.setMat4("model", glm::value_ptr(model));
         sc.setMat4("view", glm::value_ptr(view));
         sc.setMat4("projection", glm::value_ptr(projection));
-        
-        
-        glm::vec3 lightPos = glm::vec3(0.f, 2.f, 5.f);
-        glm::vec3 lightColor = glm::vec3(1.f);
-        glm::vec3 objectAlbedo = glm::vec3(1.f, 0.5f, 0.31f);
-        sc.setVec3("lightPos", glm::value_ptr(lightPos));
-        sc.setVec3("lightColor", glm::value_ptr(lightColor));
-        sc.setVec3("objectAlbedo", glm::value_ptr(objectAlbedo));
 
+        
+        Light light;
+        light.position = glm::vec3(0.0, 2.0, 5.0);
+        light.color = glm::vec3(1.0, 1.0, 1.0);
+
+        sc.setVec3("light0.position", glm::value_ptr(light.position));
+        sc.setVec3("light0.color", glm::value_ptr(light.color));
+        
+        glm::vec3 ambientLight = glm::vec3(0.2, 0.2, 0.2);
+        sc.setVec3("ambientLight", glm::value_ptr(ambientLight));
+        
+        Material mat;
+        mat.diffuseAlbedo = glm::vec3(1.f, 0.5f, 0.31f);
+        mat.fresnelR0 = glm::vec3(0.04);
+        mat.roughness = 0.1;
+
+        sc.setVec3("mat0.diffuseAlbedo", glm::value_ptr(mat.diffuseAlbedo));
+        sc.setVec3("mat0.fresnelR0", glm::value_ptr(mat.fresnelR0));
+        sc.setFloat("mat0.roughness", mat.roughness);
+
+        sc.setVec3("viewPos", glm::value_ptr(camera.Position));
         
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

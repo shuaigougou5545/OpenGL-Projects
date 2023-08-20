@@ -4,22 +4,61 @@ out vec4 FragColor;
 in vec3 PosW;
 in vec3 NormalW;
 
-uniform vec3 lightPos;
-uniform vec3 lightColor;
-uniform vec3 objectAlbedo;
 
+struct Light{
+    vec3 position;
+    vec3 color;
+};
+
+struct Material{
+    vec3 diffuseAlbedo;
+    vec3 fresnelR0;
+    float roughness;
+};
+
+uniform Light light0;
+uniform vec3 ambientLight;
+uniform Material mat0;
+uniform vec3 viewPos;
+
+
+vec3 SchlickFresnel(vec3 R0, vec3 normal, vec3 lightVec)
+{
+    float cosIncidentAngle = max(dot(normal, lightVec), 0.0);
+    float f0 = 1 - cosIncidentAngle;
+    return R0 + (1.0 - R0) * (f0*f0*f0*f0*f0);
+}
+
+vec3 BlinnPhong(Light light, vec3 lightVec, vec3 normal, vec3 toEye, Material mat)
+{
+    float m = (1.0 - mat.roughness) * 256.0;
+    vec3 halfDir = normalize(lightVec + toEye);
+    float roughnessFactor = (m+8.0)/8.0 * pow(max(dot(lightVec, halfDir), 0.0), m);
+    vec3 fresnelFactor = SchlickFresnel(mat.fresnelR0, normal, lightVec);
+   
+    vec3 specularAlbedo = fresnelFactor * roughnessFactor;
+    return specularAlbedo;
+}
 
 void main()
 {
-    float ambientStrength = 0.3;
-    vec3 ambient = ambientStrength * lightColor;
+    vec3 normalW = normalize(NormalW);
+    vec3 lightDir = normalize(light0.position - PosW);
+    vec3 viewDir = normalize(viewPos - PosW);
+    float lambert_cos = max(dot(lightDir, normalW), 0.0);
     
-    vec3 norm = normalize(NormalW);
-    vec3 lightDir = normalize(lightPos - PosW);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    // ambient
+    vec3 ambient = ambientLight * mat0.diffuseAlbedo;
     
-    vec3 col = (ambient + diffuse) * objectAlbedo;
+    // diffuse
+    vec3 diffuse = lambert_cos * light0.color * mat0.diffuseAlbedo;
+    
+    // specular
+    vec3 specularAlbedo = BlinnPhong(light0, lightDir, normalW, viewDir, mat0);
+    vec3 specular = lambert_cos * light0.color * specularAlbedo;
+    
+    vec3 col = ambient + diffuse + specular;
     
     FragColor = vec4(col, 1.0);
 }
+

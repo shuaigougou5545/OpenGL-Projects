@@ -618,6 +618,27 @@ glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0);
 - 纹理目标/类型：`GL_TEXTURE_2D`
   - 纹理目标用来指示纹理数据存储格式和用途
 
+#### （6）GLSL使用结构体struct
+
+如果想要自定义一个struct类型，并作为uniform对象传入：
+
+```cpp
+// shader
+struct Light{
+    vec3 position;
+    vec3 color;
+    float intensity;
+};
+uniform Light light;
+
+// main.cpp
+sc.setVec3("light.position", glm::value_ptr(light.position));
+sc.setVec3("light.color", glm::value_ptr(light.color));
+sc.setFloat("light.intensity", light.intensity);
+```
+
+也就是通过类似`light.color`的成员，来查location值，而且这些成员的location是挨着的，相差1，但是通过查找`light`就会失败，返回-1
+
 ### 5.数学库 GLM
 
 GLM：OpenGL Mathematics，只有头文件的库，不需要链接和编译，它的变量命名方式与OpenGL基本对齐，方便使用
@@ -720,11 +741,39 @@ $$
 LitColor=c_a+c_d+c_s
 \\ = A_L\otimes m_d+max(L\cdot n,0)\cdot B_L\otimes(m_d + R_F(\alpha_h)\frac{m+8}{8}(n\cdot h)^m)
 $$
-m<sub>d</sub>：漫反射反射率，是指被反射的入射光量 => ambient和diffuse都采用diffuse albedo这个参数，是因为他们其实都是表示“漫反射”的结果，只是diffuse是由直接光照产生的，而ambient是由间接光照产生的【这里说的不准确，只是便于理解，因为BlinnPhong模型本身就是一种抽象假设，并不具有完全正确的物理意义】
+m<sub>d</sub>：**漫反射反射率**；首先漫反射是指来自光源的光进入物体内部，经过多次反射、折射、散射以及吸收后返回样品表面的光；漫反射反射率就是指：反射出样品表面的光的比例 => ambient和diffuse都采用diffuse albedo这个参数，是因为他们其实都是表示“漫反射”的结果，只是diffuse是由直接光照产生的，而ambient是由间接光照产生的【这里说的不准确，只是便于理解，因为BlinnPhong模型本身就是一种抽象假设，并不具有完全正确的物理意义】
 
-max(L⋅n, 0)：朗伯余弦定理，是指光线达到平面时，平面接受到的能量和夹角的关系 => 这里ambient不用是因为环境光来自四面八方，而diffuse和specular来自直接光源，且是单向光源
+max(L⋅n, 0)：**朗伯余弦定理**，是指光线达到平面时，平面接受到的能量和夹角的关系 => 这里ambient不用是因为环境光来自四面八方，而diffuse和specular来自直接光源，且是单向光源
 
-<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308182010426.png" alt="截屏2023-08-18 20.09.59" style="zoom: 50%;" />：菲涅尔效应&半程向量：
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308182010426.png" alt="截屏2023-08-18 20.09.59" style="zoom: 50%;" />：**菲涅尔效应**&**半程向量**
+
+- 菲涅尔效应：光线从一个介质进入另一个介质时，在界面处会发生反射和折射的现象，R<sub>F</sub>：反射光量，1-R<sub>F</sub>：折射光量，一般不会将完整的菲涅尔方程用于实时渲染，而是采用**石里克近似法**：
+
+$$
+R_F(\theta_i)=R_F(0^{\circ} )+(1-R_F(0^{\circ} ))(1-cos\theta_i)^5
+$$
+
+- R<sub>F</sub>(0<sup>o</sup>)是指入射角为0度，也就是观察方向垂直于平面时，所以对于一般介质来说，比如说水、玻璃、塑料来说，这个值相当小，水的值是0.02，但对于金属介质来说，因为基本上光会全反射回来，所以值很大，接近1
+
+- 半程向量：引入半程向量之前，要理解**微表面模型**，一个微观平面往往由多个既微小又光滑的微平面所构成（如图👇）
+
+  - 光向量L，观察向量v，平面(宏观)法线向量n，半程向量就是v和L的中间位置，有多少比例的微平面的法线是h，那么该平面就能反射多少比例的光亮，
+
+  - α<sub>h</sub>：半程向量与光向量的夹角，所以将α<sub>h</sub>（而不是光向量与宏观法线向量）代入石里克近似方程，是因为我们将反射平面考虑为这些法线朝向为h的微平面
+
+  - 那么还需要求取有多少比例的微平面，它的法线朝向是指向h的，有一个分布函数cosθ<sup>m</sup>就符合这个要求，再对其进行归一化处理，以保持光能守恒
+
+  - $$
+    max(L\cdot n, 0)\cdot B_L\otimes(R_F(\alpha_h)\frac{m+8}{8}(n\cdot h)^m)
+    $$
+
+    
+
+  - <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308191046800.png" alt="截屏2023-08-19 10.46.41" style="zoom:50%;" />
+
+  - <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308191057455.png" alt="截屏2023-08-19 10.57.16" style="zoom:50%;" />
+
+  - 如上图👆：m这里代表光泽度，也就是`(1 - roughness) * 256`，roughness是0～1的浮点小数，一般会乘上256.f，得到这里的m
 
 #### （2）特殊：法向量的转换
 
@@ -755,7 +804,6 @@ $$
 $$
 M_n = (M^{-1})^T
 $$
-
 
 ## C1 调试
 
