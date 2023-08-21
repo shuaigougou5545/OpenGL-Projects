@@ -22,7 +22,7 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 // camera
-Camera camera(glm::vec3(0.f, 0.f, 3.f));
+Camera camera(glm::vec3(-1.2f, 1.2f, 2.f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -31,6 +31,7 @@ float deltaTime = 0.f;
 float lastFrame = 0.f;
 // button
 bool leftMouseButtonPressed = false;
+bool mouseOnImguiWindow = false;
 
 // shader struct
 struct Light{
@@ -98,7 +99,7 @@ int main()
     //
     // vertex input:
     //
-    Box box;
+    Box box(2.0, 2.0, 2.0);
     
     
     //
@@ -181,12 +182,23 @@ int main()
         glm::mat4 model, view, projection;
         model = view = projection = glm::mat4(1.0);
         
+        
+        // static imgui variable
+        static bool im_button_light_model = false;
+        static glm::vec3 im_light_color = glm::vec3(1.f);
+        static glm::vec3 im_ambient_light = glm::vec3(0.1f);
+        static glm::vec3 im_diffuse_albedo = glm::vec3(1.f, 0.5f, 0.31f);
+        static glm::vec3 im_fresnel_r0 = glm::vec3(0.2f);
+        static float im_roughness = 0.2f;
+        
+        
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGui::Begin("OpenGL");
         
         ImGui::ColorEdit3("clear color", (float*)&clear_color);
+        ImGui::Checkbox("Light Model", &im_button_light_model);
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
@@ -194,14 +206,26 @@ int main()
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         
         ImGui::End();
-        ImGui::Render();
         
+        if(im_button_light_model)
+        {
+            ImGui::Begin("Light Model");
+            ImGui::ColorEdit3("Light Color", glm::value_ptr(im_light_color));
+            ImGui::ColorEdit3("Ambient Color", glm::value_ptr(im_ambient_light));
+            ImGui::ColorEdit3("Diffuse Albedo", glm::value_ptr(im_diffuse_albedo));
+            ImGui::ColorEdit3("Fresnel R0", glm::value_ptr(im_fresnel_r0));
+            ImGui::SliderFloat("Roughness", &im_roughness, 0.0, 1.0);
+            ImGui::End();
+        }
+        
+        ImGui::Render();
         
         //
         // MVP
         //
         glm::vec3 trans = glm::vec3(0.f, 0.f, -5.f);
-        float angle = glfwGetTime() * 50.0;
+//        float angle = glfwGetTime() * 50.0;
+        float angle = 0.0f;
         glm::vec3 rotate_axis = glm::vec3(0.5f, 0.5f, 0.f);
         glm::vec3 scale = glm::vec3(1.f);
         model = glm::translate(model, trans);
@@ -217,19 +241,19 @@ int main()
 
         
         Light light;
-        light.position = glm::vec3(0.0, 2.0, 5.0);
-        light.color = glm::vec3(1.0, 1.0, 1.0);
+        light.position = glm::vec3(2.0, 2.0, 5.0);
+        light.color = im_light_color;
 
         sc.setVec3("light0.position", glm::value_ptr(light.position));
         sc.setVec3("light0.color", glm::value_ptr(light.color));
         
-        glm::vec3 ambientLight = glm::vec3(0.2, 0.2, 0.2);
+        glm::vec3 ambientLight = im_ambient_light;
         sc.setVec3("ambientLight", glm::value_ptr(ambientLight));
         
         Material mat;
-        mat.diffuseAlbedo = glm::vec3(1.f, 0.5f, 0.31f);
-        mat.fresnelR0 = glm::vec3(0.04);
-        mat.roughness = 0.1;
+        mat.diffuseAlbedo = im_diffuse_albedo;
+        mat.fresnelR0 = im_fresnel_r0;
+        mat.roughness = im_roughness;
 
         sc.setVec3("mat0.diffuseAlbedo", glm::value_ptr(mat.diffuseAlbedo));
         sc.setVec3("mat0.fresnelR0", glm::value_ptr(mat.fresnelR0));
@@ -296,6 +320,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             leftMouseButtonPressed = false;
         }
     }
+    
+    ImGuiIO& io = ImGui::GetIO();
+    if (io.WantCaptureMouse)
+        mouseOnImguiWindow = true;
+    else
+        mouseOnImguiWindow = false;
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
@@ -316,7 +346,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     lastX = xpos;
     lastY = ypos;
     
-    if(leftMouseButtonPressed){
+    if(leftMouseButtonPressed && !mouseOnImguiWindow){
         camera.ProcessMouseMovement(xoffset, yoffset);
     }
 }
