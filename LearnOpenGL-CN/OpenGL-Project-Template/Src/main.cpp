@@ -15,7 +15,8 @@
 #include "Camera.h"
 #include "ShaderConstructor.h"
 #include "ShapeGenerator.h"
-#include "stb_image.h"
+#include "LoadTexture.h"
+#include "ImguiGenerator.h"
 
 #include "Material.h"
 #include "Light.h"
@@ -24,7 +25,7 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.f, 0.f, 2.f));
+Camera camera(glm::vec3(0.f, 0.f, 3.f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -76,20 +77,15 @@ int main()
     //
     // imgui
     //
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // 支持键盘控制
-    ImGui::StyleColorsDark(); // style
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    ImguiGenerator ig(window);
+    ig.Init();
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     
     
     //
     // vertex input:
     //
-    Box box(2.0, 2.0, 2.0);
+    Box box;
     
     
     //
@@ -108,10 +104,12 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, box.vertices.size() * sizeof(float), box.vertices.data(), GL_STATIC_DRAW);
 //    glBufferData(GL_ELEMENT_ARRAY_BUFFER, box.indices.size() * sizeof(unsigned int), box.indices.data(), GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -122,27 +120,14 @@ int main()
     //
     // texture
     //
-//    unsigned int texture;
-//    glGenTextures(1, &texture);
-//    glBindTexture(GL_TEXTURE_2D, texture);
-//    
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    
-//    int width, height, nrChannels;
-//    unsigned char *data = stbi_load("./Textures/container.jpg", &width, &height, &nrChannels, 0);
-//    if(data)
-//    {
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-//        glGenerateMipmap(GL_TEXTURE_2D);
-//    }
-//    else
-//    {
-//        std::cout << "ERROR [texture]: failed to load texture" << std::endl;
-//    }
-//    stbi_image_free(data);
+    unsigned int texture;
+    texture = loadTexture("./Textures/container2.png");
+    
+    
+    //
+    // depth
+    //
+    glEnable(GL_DEPTH_TEST);
     
     
     //
@@ -155,8 +140,11 @@ int main()
     // other
     //
     sc.use();
-//    glBindTexture(GL_TEXTURE_2D, texture);
-    glEnable(GL_DEPTH_TEST);
+    sc.setInt("mat.diffuse", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    
+    
     
     
     while(!glfwWindowShouldClose(window))
@@ -166,14 +154,19 @@ int main()
         lastFrame = currentFrame;
         
         processInput(window);
-        
         glfwPollEvents();
+        
         
         glm::mat4 model, view, projection;
         model = view = projection = glm::mat4(1.0);
+        glm::vec3 trans = glm::vec3(0.f, 0.f, -5.f);
+        float rotate_angle = 0.0f;
+        glm::vec3 rotate_axis = glm::vec3(0.5f, 0.5f, 0.f);
+        glm::vec3 scale = glm::vec3(1.f);
         
         Light light;
-        light.position = glm::vec3(0.0, 5.0, 5.0);
+        light.position = glm::vec3(1.2f, 1.0f, 2.0f);
+        
         Material mat;
         
         
@@ -187,9 +180,8 @@ int main()
         static float im_roughness = 0.9f;
         
         
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        ig.InitWindow();
+        
         ImGui::Begin("OpenGL");
         
         ImGui::Text("Camera Position: (%.1f, %.1f, %.1f)", camera.Position.x, camera.Position.y, camera.Position.z);
@@ -201,6 +193,7 @@ int main()
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
+        ImGuiIO& io = ImGui::GetIO();
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         
         ImGui::End();
@@ -226,15 +219,10 @@ int main()
         
         
         //
-        // MVP
+        // Box
         //
-        glm::vec3 trans = glm::vec3(0.f, 0.f, -5.f);
-//        float angle = glfwGetTime() * 50.0;
-        float angle = 0.0f;
-        glm::vec3 rotate_axis = glm::vec3(0.5f, 0.5f, 0.f);
-        glm::vec3 scale = glm::vec3(1.f);
         model = glm::translate(model, trans);
-        model = glm::rotate(model, glm::radians(angle), rotate_axis);
+        model = glm::rotate(model, glm::radians(rotate_angle), rotate_axis);
         model = glm::scale(model, scale);
         
         view = camera.GetViewMatrix();
@@ -269,7 +257,24 @@ int main()
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        //
+        // Light Box
+        //
+//        trans = light.position;
+//        scale = glm::vec3(0.1f);
+//        model = glm::translate(model, trans);
+//        model = glm::scale(model, scale);
+//        mat.diffuseAlbedo = glm::vec3(1.0);
+//        mat.fresnelR0 = glm::vec3(1.0);
+//        mat.roughness = 1.0f;
+//        sc.setMat4("model", glm::value_ptr(model));
+//        sc.setVec3("mat0.diffuseAlbedo", glm::value_ptr(mat.diffuseAlbedo));
+//        sc.setVec3("mat0.fresnelR0", glm::value_ptr(mat.fresnelR0));
+//        sc.setFloat("mat0.roughness", mat.roughness);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        
+        ig.DrawWindow();
         
         glfwSwapBuffers(window);
     }

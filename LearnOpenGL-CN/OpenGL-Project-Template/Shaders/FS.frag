@@ -3,6 +3,7 @@ out vec4 FragColor;
 
 in vec3 PosW;
 in vec3 NormalW;
+in vec2 TexCoords;
 
 
 struct Light{
@@ -11,6 +12,7 @@ struct Light{
 };
 
 struct Material{
+    sampler2D diffuse;
     vec3 diffuseAlbedo;
     vec3 fresnelR0;
     float roughness;
@@ -51,10 +53,12 @@ void main()
     float lambert_cos = max(dot(lightDir, normalW), 0.0) / pi;
     
     // ambient
-    vec3 ambient = ambientLight * mat0.diffuseAlbedo;
+//    vec3 diffuseAlbedo = mat0.diffuseAlbedo;
+    vec3 diffuseAlbedo = texture(mat0.diffuse, TexCoords).xyz;
+    vec3 ambient = ambientLight * diffuseAlbedo;
     
     // diffuse
-    vec3 diffuse = lambert_cos * light0.color * mat0.diffuseAlbedo;
+    vec3 diffuse = lambert_cos * light0.color * diffuseAlbedo;
     
     // specular
     vec3 specularAlbedo = BlinnPhong(light0, lightDir, normalW, viewDir, mat0);

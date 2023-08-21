@@ -24,6 +24,7 @@
 		94AB14602A89CB2A0004D601 /* glm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB13A32A89CB2A0004D601 /* glm.cpp */; };
 		94ECD31E2A937E7300FE034E /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31D2A937E7300FE034E /* Material.cpp */; };
 		94ECD3202A937EC400FE034E /* Light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31F2A937EC400FE034E /* Light.cpp */; };
+		94ECD3262A9391A000FE034E /* ImguiGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */; };
 		94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */; };
 /* End PBXBuildFile section */
 
@@ -498,6 +499,10 @@
 		94ECD31C2A9373AB00FE034E /* Light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Light.h; sourceTree = "<group>"; };
 		94ECD31D2A937E7300FE034E /* Material.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Material.cpp; sourceTree = "<group>"; };
 		94ECD31F2A937EC400FE034E /* Light.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Light.cpp; sourceTree = "<group>"; };
+		94ECD3212A938DDD00FE034E /* container2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = container2.png; sourceTree = "<group>"; };
+		94ECD3222A938FAA00FE034E /* LoadTexture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LoadTexture.h; sourceTree = "<group>"; };
+		94ECD3242A9390AB00FE034E /* ImguiGenerator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ImguiGenerator.h; sourceTree = "<group>"; };
+		94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImguiGenerator.cpp; sourceTree = "<group>"; };
 		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
 		94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderConstructor.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -599,6 +604,7 @@
 		94AB12A52A888FAE0004D601 /* Textures */ = {
 			isa = PBXGroup;
 			children = (
+				94ECD3212A938DDD00FE034E /* container2.png */,
 				94AB12B42A88D6860004D601 /* container.jpg */,
 				94AB12B32A88CB870004D601 /* wall.jpg */,
 			);
@@ -1092,6 +1098,9 @@
 				945851322A8E2C70008E7FAB /* Camera.h */,
 				9431E3DE2A8FABE900938A6B /* ShapeGenerator.h */,
 				9431E3DF2A8FAC0B00938A6B /* ShapeGenerator.cpp */,
+				94ECD3222A938FAA00FE034E /* LoadTexture.h */,
+				94ECD3242A9390AB00FE034E /* ImguiGenerator.h */,
+				94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -1158,6 +1167,7 @@
 				945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */,
 				945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */,
 				945706872A8B249600C1D597 /* imgui_draw.cpp in Sources */,
+				94ECD3262A9391A000FE034E /* ImguiGenerator.cpp in Sources */,
 				945706852A8B249600C1D597 /* imgui_impl_glfw.cpp in Sources */,
 				941FD60D2A8649B200C932DD /* main.cpp in Sources */,
 				945706862A8B249600C1D597 /* imgui_demo.cpp in Sources */,
