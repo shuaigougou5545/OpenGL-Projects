@@ -22,6 +22,8 @@
 		94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12AF2A88CA630004D601 /* stb_image.cpp */; };
 		94AB12B22A88CAA00004D601 /* glad.c in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12B12A88CAA00004D601 /* glad.c */; };
 		94AB14602A89CB2A0004D601 /* glm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB13A32A89CB2A0004D601 /* glm.cpp */; };
+		94ECD31E2A937E7300FE034E /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31D2A937E7300FE034E /* Material.cpp */; };
+		94ECD3202A937EC400FE034E /* Light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31F2A937EC400FE034E /* Light.cpp */; };
 		94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */; };
 /* End PBXBuildFile section */
 
@@ -492,6 +494,10 @@
 		94AB145D2A89CB2A0004D601 /* rotate_normalized_axis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = rotate_normalized_axis.hpp; sourceTree = "<group>"; };
 		94AB145E2A89CB2A0004D601 /* projection.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = projection.inl; sourceTree = "<group>"; };
 		94AB145F2A89CB2A0004D601 /* type_aligned.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = type_aligned.hpp; sourceTree = "<group>"; };
+		94ECD31B2A93736900FE034E /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Material.h; sourceTree = "<group>"; };
+		94ECD31C2A9373AB00FE034E /* Light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Light.h; sourceTree = "<group>"; };
+		94ECD31D2A937E7300FE034E /* Material.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Material.cpp; sourceTree = "<group>"; };
+		94ECD31F2A937EC400FE034E /* Light.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Light.cpp; sourceTree = "<group>"; };
 		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
 		94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderConstructor.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -537,6 +543,10 @@
 			isa = PBXGroup;
 			children = (
 				941FD60C2A8649B200C932DD /* main.cpp */,
+				94ECD31B2A93736900FE034E /* Material.h */,
+				94ECD31C2A9373AB00FE034E /* Light.h */,
+				94ECD31D2A937E7300FE034E /* Material.cpp */,
+				94ECD31F2A937EC400FE034E /* Light.cpp */,
 			);
 			path = Src;
 			sourceTree = "<group>";
@@ -1143,6 +1153,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				94ECD3202A937EC400FE034E /* Light.cpp in Sources */,
 				94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */,
 				945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */,
 				945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */,
@@ -1151,6 +1162,7 @@
 				941FD60D2A8649B200C932DD /* main.cpp in Sources */,
 				945706862A8B249600C1D597 /* imgui_demo.cpp in Sources */,
 				945706842A8B249600C1D597 /* imgui_tables.cpp in Sources */,
+				94ECD31E2A937E7300FE034E /* Material.cpp in Sources */,
 				9431E3E02A8FAC0B00938A6B /* ShapeGenerator.cpp in Sources */,
 				94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */,
 				94AB14602A89CB2A0004D601 /* glm.cpp in Sources */,

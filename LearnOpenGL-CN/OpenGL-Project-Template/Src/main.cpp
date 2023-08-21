@@ -17,33 +17,23 @@
 #include "ShapeGenerator.h"
 #include "stb_image.h"
 
+#include "Material.h"
+#include "Light.h"
 
-// settings
+
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-// camera
-Camera camera(glm::vec3(-1.2f, 1.2f, 2.f));
+
+Camera camera(glm::vec3(0.f, 0.f, 2.f));
+
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
-// timing
-float deltaTime = 0.f;
-float lastFrame = 0.f;
-// button
 bool leftMouseButtonPressed = false;
 bool mouseOnImguiWindow = false;
 
-// shader struct
-struct Light{
-    glm::vec3 position;
-    glm::vec3 color;
-};
-
-struct Material{
-    glm::vec3 diffuseAlbedo;
-    glm::vec3 fresnelR0;
-    float roughness;
-};
+float deltaTime = 0.f;
+float lastFrame = 0.f;
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -182,14 +172,19 @@ int main()
         glm::mat4 model, view, projection;
         model = view = projection = glm::mat4(1.0);
         
+        Light light;
+        light.position = glm::vec3(0.0, 5.0, 5.0);
+        Material mat;
+        
         
         // static imgui variable
         static bool im_button_light_model = false;
+        static bool im_buttom_material_model = false;
         static glm::vec3 im_light_color = glm::vec3(1.f);
         static glm::vec3 im_ambient_light = glm::vec3(0.1f);
         static glm::vec3 im_diffuse_albedo = glm::vec3(1.f, 0.5f, 0.31f);
         static glm::vec3 im_fresnel_r0 = glm::vec3(0.2f);
-        static float im_roughness = 0.2f;
+        static float im_roughness = 0.9f;
         
         
         ImGui_ImplOpenGL3_NewFrame();
@@ -197,8 +192,11 @@ int main()
         ImGui::NewFrame();
         ImGui::Begin("OpenGL");
         
+        ImGui::Text("Camera Position: (%.1f, %.1f, %.1f)", camera.Position.x, camera.Position.y, camera.Position.z);
+        ImGui::Text("Light Position: (%.1f, %.1f, %.1f)", light.position.x, light.position.y, light.position.z);
         ImGui::ColorEdit3("clear color", (float*)&clear_color);
-        ImGui::Checkbox("Light Model", &im_button_light_model);
+        ImGui::Checkbox("Light Model Info", &im_button_light_model);
+        ImGui::Checkbox("Material Model Info", &im_buttom_material_model);
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
@@ -209,9 +207,15 @@ int main()
         
         if(im_button_light_model)
         {
-            ImGui::Begin("Light Model");
+            ImGui::Begin("Light Model Info");
             ImGui::ColorEdit3("Light Color", glm::value_ptr(im_light_color));
             ImGui::ColorEdit3("Ambient Color", glm::value_ptr(im_ambient_light));
+            ImGui::End();
+        }
+        
+        if(im_buttom_material_model)
+        {
+            ImGui::Begin("Material Model Info");
             ImGui::ColorEdit3("Diffuse Albedo", glm::value_ptr(im_diffuse_albedo));
             ImGui::ColorEdit3("Fresnel R0", glm::value_ptr(im_fresnel_r0));
             ImGui::SliderFloat("Roughness", &im_roughness, 0.0, 1.0);
@@ -219,6 +223,7 @@ int main()
         }
         
         ImGui::Render();
+        
         
         //
         // MVP
@@ -238,10 +243,7 @@ int main()
         sc.setMat4("model", glm::value_ptr(model));
         sc.setMat4("view", glm::value_ptr(view));
         sc.setMat4("projection", glm::value_ptr(projection));
-
         
-        Light light;
-        light.position = glm::vec3(2.0, 2.0, 5.0);
         light.color = im_light_color;
 
         sc.setVec3("light0.position", glm::value_ptr(light.position));
@@ -250,7 +252,6 @@ int main()
         glm::vec3 ambientLight = im_ambient_light;
         sc.setVec3("ambientLight", glm::value_ptr(ambientLight));
         
-        Material mat;
         mat.diffuseAlbedo = im_diffuse_albedo;
         mat.fresnelR0 = im_fresnel_r0;
         mat.roughness = im_roughness;
