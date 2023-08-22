@@ -25,7 +25,7 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.f, 0.f, 3.f));
+Camera camera(glm::vec3(0.0f, 0.5f, -0.5f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -79,7 +79,7 @@ int main()
     //
     ImguiGenerator ig(window);
     ig.Init();
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
     
     
     //
@@ -140,11 +140,9 @@ int main()
     // other
     //
     sc.use();
-    sc.setInt("mat.diffuse", 0);
+    sc.setInt("gMat.DiffuseTexture", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
-    
-    
     
     
     while(!glfwWindowShouldClose(window))
@@ -156,39 +154,8 @@ int main()
         processInput(window);
         glfwPollEvents();
         
-        
-        glm::mat4 model, view, projection;
-        model = view = projection = glm::mat4(1.0);
-        glm::vec3 trans = glm::vec3(0.f, 0.f, -5.f);
-        float rotate_angle = 0.0f;
-        glm::vec3 rotate_axis = glm::vec3(0.5f, 0.5f, 0.f);
-        glm::vec3 scale = glm::vec3(1.f);
-        
-        Light light;
-        light.position = glm::vec3(1.2f, 1.0f, 2.0f);
-        
-        Material mat;
-        
-        
-        // static imgui variable
-        static bool im_button_light_model = false;
-        static bool im_buttom_material_model = false;
-        static glm::vec3 im_light_color = glm::vec3(1.f);
-        static glm::vec3 im_ambient_light = glm::vec3(0.1f);
-        static glm::vec3 im_diffuse_albedo = glm::vec3(1.f, 0.5f, 0.31f);
-        static glm::vec3 im_fresnel_r0 = glm::vec3(0.2f);
-        static float im_roughness = 0.9f;
-        
-        
         ig.InitWindow();
-        
         ImGui::Begin("OpenGL");
-        
-        ImGui::Text("Camera Position: (%.1f, %.1f, %.1f)", camera.Position.x, camera.Position.y, camera.Position.z);
-        ImGui::Text("Light Position: (%.1f, %.1f, %.1f)", light.position.x, light.position.y, light.position.z);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
-        ImGui::Checkbox("Light Model Info", &im_button_light_model);
-        ImGui::Checkbox("Material Model Info", &im_buttom_material_model);
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
@@ -196,33 +163,17 @@ int main()
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
         ImGui::End();
-        
-        if(im_button_light_model)
-        {
-            ImGui::Begin("Light Model Info");
-            ImGui::ColorEdit3("Light Color", glm::value_ptr(im_light_color));
-            ImGui::ColorEdit3("Ambient Color", glm::value_ptr(im_ambient_light));
-            ImGui::End();
-        }
-        
-        if(im_buttom_material_model)
-        {
-            ImGui::Begin("Material Model Info");
-            ImGui::ColorEdit3("Diffuse Albedo", glm::value_ptr(im_diffuse_albedo));
-            ImGui::ColorEdit3("Fresnel R0", glm::value_ptr(im_fresnel_r0));
-            ImGui::SliderFloat("Roughness", &im_roughness, 0.0, 1.0);
-            ImGui::End();
-        }
-        
         ImGui::Render();
         
         
         //
         // Box
         //
-        model = glm::translate(model, trans);
-        model = glm::rotate(model, glm::radians(rotate_angle), rotate_axis);
-        model = glm::scale(model, scale);
+        glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
+        
+        model = glm::translate(model, glm::vec3(0.f, 0.f, -5.f));
+        model = glm::rotate(model, glm::radians(float(glfwGetTime()) * 10.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+        model = glm::scale(model, glm::vec3(1.f));
         
         view = camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
@@ -231,23 +182,40 @@ int main()
         sc.setMat4("view", glm::value_ptr(view));
         sc.setMat4("projection", glm::value_ptr(projection));
         
-        light.color = im_light_color;
-
-        sc.setVec3("light0.position", glm::value_ptr(light.position));
-        sc.setVec3("light0.color", glm::value_ptr(light.color));
         
-        glm::vec3 ambientLight = im_ambient_light;
-        sc.setVec3("ambientLight", glm::value_ptr(ambientLight));
+        Material mat;
+        mat.FresnelR0 = glm::vec3(0.05f);
+        mat.Roughness = 0.3f;
+        mat.DiffuseAlbedo = glm::vec4(0.69f, 0.77f, 0.87f, 1.0f);
+
+        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
+        sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
+        sc.setFloat("gMat.Roughness", mat.Roughness);
         
-        mat.diffuseAlbedo = im_diffuse_albedo;
-        mat.fresnelR0 = im_fresnel_r0;
-        mat.roughness = im_roughness;
+        
+        //
+        // Lights
+        //
+        glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
+        sc.setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
+        
+        const int MaxLights = 16;
+        Light lights[MaxLights];
+        lights[0].Strength = glm::vec3(0.6f, 0.6f, 0.6f);
+        lights[0].Direction = glm::vec3(0.57735f, -0.57735f, 0.57735f);
+        lights[1].Strength = glm::vec3(0.3f, 0.3f, 0.3f);
+        lights[1].Direction = glm::vec3(-0.57735f, -0.57735f, 0.57735f);
+        lights[2].Strength = glm::vec3(0.15f, 0.15f, 0.15f);
+        lights[2].Direction = glm::vec3(0.0f, -0.707f, -0.707f);
+        sc.setVec3("gLights[0].Strength", glm::value_ptr(lights[0].Strength));
+        sc.setVec3("gLights[0].Direction", glm::value_ptr(lights[0].Direction));
+        sc.setVec3("gLights[1].Strength", glm::value_ptr(lights[1].Strength));
+        sc.setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
+        sc.setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
+        sc.setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
+        
 
-        sc.setVec3("mat0.diffuseAlbedo", glm::value_ptr(mat.diffuseAlbedo));
-        sc.setVec3("mat0.fresnelR0", glm::value_ptr(mat.fresnelR0));
-        sc.setFloat("mat0.roughness", mat.roughness);
-
-        sc.setVec3("viewPos", glm::value_ptr(camera.Position));
+        sc.setVec3("gViewPos", glm::value_ptr(camera.Position));
         
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

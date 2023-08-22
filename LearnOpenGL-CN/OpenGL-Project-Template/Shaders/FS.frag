@@ -1,31 +1,56 @@
 #version 330 core
+
+#define MaxLights 16
+
+#ifndef NUM_DIR_LIGHTS
+    #define NUM_DIR_LIGHTS 3
+#endif
+
+#ifndef NUM_POINT_LIGHTS
+    #define NUM_POINT_LIGHTS 0
+#endif
+
+#ifndef NUM_SPOT_LIGHTS
+    #define NUM_SPOT_LIGHTS 0
+#endif
+
+
+struct Light{
+    vec3 Strength;
+    float FalloffStart; // point/spot light only
+    vec3 Position; // point light only
+    float FalloffEnd; // point/spot light only
+    vec3 Direction; // directional/spot light only
+    float SpotPower; // spot light only
+};
+
+struct Material{
+    sampler2D DiffuseTexture;
+    vec4 DiffuseAlbedo;
+    vec3 FresnelR0;
+    float Roughness;
+};
+
 out vec4 FragColor;
 
 in vec3 PosW;
 in vec3 NormalW;
 in vec2 TexCoords;
 
-
-struct Light{
-    vec3 position;
-    vec3 color;
-};
-
-struct Material{
-    sampler2D diffuse;
-    vec3 diffuseAlbedo;
-    vec3 fresnelR0;
-    float roughness;
-};
-
-uniform vec3 ambientLight;
-uniform Light light0;
-uniform Material mat0;
-uniform vec3 viewPos;
+uniform vec4 gAmbientLight;
+uniform Light gLights[MaxLights];
+uniform Material gMat;
+uniform vec3 gViewPos;
 
 
 const float pi = 3.1415926;
 
+
+float CalcAttenuation(float d, float falloffStart, float falloffEnd)
+{
+    // linear
+    return clamp((falloffEnd - d) / (falloffEnd - falloffStart), 0.0, 1.0);
+}
 
 vec3 SchlickFresnel(vec3 R0, vec3 normal, vec3 lightVec)
 {
@@ -34,38 +59,117 @@ vec3 SchlickFresnel(vec3 R0, vec3 normal, vec3 lightVec)
     return R0 + (1.0 - R0) * (f0*f0*f0*f0*f0);
 }
 
-vec3 BlinnPhong(Light light, vec3 lightVec, vec3 normal, vec3 toEye, Material mat)
+vec3 BlinnPhong(vec3 lightStrength, vec3 lightVec, vec3 normal, vec3 toEye, Material mat)
 {
-    float m = (1.0 - mat.roughness) * 255.0 + 1.0; // m >= 1
-    vec3 halfDir = normalize(lightVec + toEye);
-    float roughnessFactor = (m+8.0)/8.0 * pow(max(dot(lightVec, halfDir), 0.0), m);
-    vec3 fresnelFactor = SchlickFresnel(mat.fresnelR0, normal, lightVec);
-   
-    vec3 specularAlbedo = fresnelFactor * roughnessFactor;
-    return specularAlbedo;
+    // calculate diffuse albedo & specular albedo
+    float m = mat.Roughness * 256.0f;
+    vec3 halfVec = normalize(toEye + lightVec);
+
+    float roughnessFactor = (m + 8.0f)*pow(max(dot(halfVec, normal), 0.0f), m) / 8.0f;
+    vec3 fresnelFactor = SchlickFresnel(mat.FresnelR0, halfVec, lightVec);
+
+    vec3 specAlbedo = fresnelFactor*roughnessFactor;
+
+    specAlbedo = specAlbedo / (specAlbedo + 1.0f);
+
+    return (mat.DiffuseAlbedo.xyz + specAlbedo) * lightStrength;
+}
+
+vec3 ComputeDirectionalLight(Light L, Material mat, vec3 normal, vec3 toEye)
+{
+   vec3 lightVec = -L.Direction;
+
+   float ndotl = max(dot(lightVec, normal), 0.0f);
+   vec3 lightStrength = L.Strength * ndotl;
+
+   return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
+
+vec3 ComputePointLight(Light L, Material mat, vec3 pos, vec3 normal, vec3 toEye)
+{
+   vec3 lightVec = L.Position - pos;
+
+   float d = length(lightVec);
+
+   if(d > L.FalloffEnd)
+       return vec3(0.f);
+
+   lightVec /= d;
+
+   float ndotl = max(dot(lightVec, normal), 0.0f);
+   vec3 lightStrength = L.Strength * ndotl;
+
+   float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+   lightStrength *= att;
+
+   return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
+
+vec3 ComputeSpotLight(Light L, Material mat, vec3 pos, vec3 normal, vec3 toEye)
+{
+   vec3 lightVec = L.Position - pos;
+
+   float d = length(lightVec);
+
+   if(d > L.FalloffEnd)
+       return vec3(0.f);
+
+   lightVec /= d;
+
+   float ndotl = max(dot(lightVec, normal), 0.0f);
+   vec3 lightStrength = L.Strength * ndotl;
+
+   float att = CalcAttenuation(d, L.FalloffStart, L.FalloffEnd);
+   lightStrength *= att;
+
+   float spotFactor = pow(max(dot(-lightVec, L.Direction), 0.0f), L.SpotPower);
+   lightStrength *= spotFactor;
+
+   return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);
+}
+
+vec4 ComputeLighting(Light lights[MaxLights], Material mat, vec3 pos, vec3 normal, vec3 toEye, vec3 shadowFactor)
+{
+    vec3 result = vec3(0.f);
+    int i = 0;
+    
+#if (NUM_DIR_LIGHTS > 0)
+    for(i = 0; i < NUM_DIR_LIGHTS; ++i)
+    {
+        result += shadowFactor[i] * ComputeDirectionalLight(lights[i], mat, normal, toEye);
+    }
+#endif
+
+#if (NUM_POINT_LIGHTS > 0)
+    for(i = NUM_DIR_LIGHTS; i < NUM_DIR_LIGHTS+NUM_POINT_LIGHTS; ++i)
+    {
+        result += ComputePointLight(lights[i], mat, pos, normal, toEye);
+    }
+#endif
+
+#if (NUM_SPOT_LIGHTS > 0)
+    for(i = NUM_DIR_LIGHTS + NUM_POINT_LIGHTS; i < NUM_DIR_LIGHTS + NUM_POINT_LIGHTS + NUM_SPOT_LIGHTS; ++i)
+    {
+        result += ComputeSpotLight(lights[i], mat, pos, normal, toEye);
+    }
+#endif
+
+    return vec4(result, 0.0f);
 }
 
 void main()
 {
     vec3 normalW = normalize(NormalW);
-    vec3 lightDir = normalize(light0.position - PosW);
-    vec3 viewDir = normalize(viewPos - PosW);
-    float lambert_cos = max(dot(lightDir, normalW), 0.0) / pi;
+    vec3 toEyeW = normalize(gViewPos - PosW);
     
-    // ambient
-//    vec3 diffuseAlbedo = mat0.diffuseAlbedo;
-    vec3 diffuseAlbedo = texture(mat0.diffuse, TexCoords).xyz;
-    vec3 ambient = ambientLight * diffuseAlbedo;
+    vec4 diffuseAlbedo = gMat.DiffuseAlbedo;
+    vec4 ambient = gAmbientLight * diffuseAlbedo;
     
-    // diffuse
-    vec3 diffuse = lambert_cos * light0.color * diffuseAlbedo;
+    vec3 shadowFactor = vec3(1.f);
+    vec4 directLight = ComputeLighting(gLights, gMat, PosW, NormalW, toEyeW, shadowFactor);
     
-    // specular
-    vec3 specularAlbedo = BlinnPhong(light0, lightDir, normalW, viewDir, mat0);
-    vec3 specular = lambert_cos * light0.color * specularAlbedo;
+    vec4 col = ambient + directLight;
     
-    vec3 col = ambient + diffuse + specular;
-    
-    FragColor = vec4(col, 1.0);
+    FragColor = col;
 }
 

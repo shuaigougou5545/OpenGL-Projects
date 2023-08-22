@@ -7,9 +7,9 @@
 
 
 struct Material{
-    glm::vec3 diffuseAlbedo;
-    glm::vec3 fresnelR0;
-    float roughness;
+    glm::vec4 DiffuseAlbedo;
+    glm::vec3 FresnelR0;
+    float Roughness;
 };
 
 

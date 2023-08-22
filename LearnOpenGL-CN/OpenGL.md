@@ -814,27 +814,31 @@ $$
 
 #### （3）平行光、电光源、手电筒
 
-##### 平行光
+##### 平行光 - directional light
 
 - 光的描述：direction，不是position，光线不衰减
 
-##### 电光源
+##### 点光源 - point light
 
 - 光的描述：position，光线要衰减
 
 - 衰减方程：
 
-  - $$
+  - 线性：falloffStart ～ falloffEnd
+
+  - 非线性：
+    $$
     F_{att}=\frac{1.0}{K_c+K_l*d+K_q*d^2}
     $$
-
     K<sub>c</sub>一般保持1，让分母始终大于1，另外两个分别是一次项和二次项，实现非线性的光线衰减
 
     命名：constant、linear、quadratic
 
-<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308220950503.png" alt="截屏2023-08-22 09.50.11" style="zoom: 50%;" />
+    <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308220950503.png" alt="截屏2023-08-22 09.50.11" style="zoom: 50%;" />
 
+  - 
 
+##### 聚光灯 - spot light
 
 ## C1 调试
 
@@ -997,6 +1001,91 @@ ImGui::ShowDemoWindow();
 ImGui提供一个已经创建好的demo-window，我们可以通过这一个函数来创建它辅助我们使用Imgui
 
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308151247073.png" alt="截屏2023-08-15 12.47.03" style="zoom:50%;" />
+
+## C3 GLSL常见问题
+
+### 1.uniform location
+
+GLSL对数组和自定义结构的支持很奇怪：
+
+- **struct**：
+
+  - 当在shader中定义一个struct，并将其设为uniform时，`glGetUniformLocation()`函数很奇怪
+
+  - ```cpp
+    // shader
+    struct Light{
+    	vec3 strength;
+    	vec3 position;
+    };
+    uniform Light light;
+    
+    // cpp
+    glGetUniformLocation(ID, "light"); // -1
+    glGetUniformLocation(ID, "light.strength"); // 0
+    glGetUniformLocation(ID, "light.position"); // 1
+    ```
+
+    也就是说，当uniform涉及到struct时，无法通过struct变量名获取地址，必须准确到成员名`light.position`
+
+- **普通数组**：
+
+  - 单纯的数组是支持通过数组名获取location的，但是数组不能是struct数组
+
+  - ```cpp
+    // shader
+    uniform vec3 colors[10];
+    
+    // cpp
+    glGetUniformLocation(ID, "colors"); // 0
+    glGetUniformLocation(ID, "colors[0]"); // 0
+    glGetUniformLocation(ID, "colors[1]"); // 1
+    ```
+
+- **struct数组**：
+
+  - struct数组就很麻烦了，必须定位到数组的第几个元素的哪个成员
+
+  - ```cpp
+    // shader
+    // shader
+    struct Light{
+    	vec3 strength;
+    	vec3 position;
+    };
+    const int N = 10;
+    uniform Light lights[N];
+    
+    // cpp
+    glGetUniformLocation(ID, "lights"); // -1
+    glGetUniformLocation(ID, "lights[0]"); // -1
+    glGetUniformLocation(ID, "lights[0].strength"); // 0
+    glGetUniformLocation(ID, "lights[0].position"); // 1
+    glGetUniformLocation(ID, "lights[1].strength"); // 2
+    
+    glUniform1fv(glGetUniformLocation(ID, "lights[0].strength"), N * sizeof(Light) / sizeof(float), reinterpret_cast<float*>(lights)); // 也不行
+    ```
+
+🤔️为什么会是👆这种情况不知道，有可能是OpenGL/GLSL版本比较低，不支持，通过实际操作总结出以上规律；ChatGPT给我的解释是：
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308221713907.png" alt="截屏2023-08-22 17.12.31" style="zoom:50%;" />
+
+### 2.内存对齐
+
+GLSL内存对齐有两种方式：`std140`布局 & `std430`布局
+
+- `std140`：要求数据按照4字节对齐，每个数据会在每4字节的边界上对齐，也就是说，如果不够四字节，则剩余空间将被填充
+- `std430`：要求数据按照4字节对齐，但数据更紧凑，会紧凑排布数据，没有额外的填充
+
+`uniform` 是一种特殊的全局 buffer，只可读，默认 std140 布局且无法修改
+
+> 参考：https://blog.csdn.net/qq_62464995/article/details/128440953
+
+TODO：补充～
+
+### 3.优化
+
+shader中uniform变量如果没有用到，则会被优化删除掉，所以会导致glGetUniformLocation找不到位置值，只是一个很严重的bug
 
 ## Q1 多线程
 
