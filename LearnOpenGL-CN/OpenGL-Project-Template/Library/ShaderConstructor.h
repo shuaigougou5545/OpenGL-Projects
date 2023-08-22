@@ -7,13 +7,14 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 
 class ShaderConstructor{
 public:
     unsigned int ID; // shader program ID
     
-    ShaderConstructor(const char* vsPath, const char* fsPath);
+    ShaderConstructor(const std::string vsPath, const std::string fsPath, const std::string vsMacroString = "", const std::string fsMacroString = "");
     void use();
     void destory();
     

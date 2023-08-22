@@ -1,7 +1,7 @@
 #include "ShaderConstructor.h"
 
 
-ShaderConstructor::ShaderConstructor(const char* vsPath, const char* fsPath)
+ShaderConstructor::ShaderConstructor(const std::string vsPath, const std::string fsPath, const std::string vsMacroString, const std::string fsMacroString)
 {
     std::string vsString, fsString;
     std::ifstream vsFile, fsFile;
@@ -9,8 +9,8 @@ ShaderConstructor::ShaderConstructor(const char* vsPath, const char* fsPath)
     vsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try {
-        vsFile.open(vsPath);
-        fsFile.open(fsPath);
+        vsFile.open(vsPath.c_str());
+        fsFile.open(fsPath.c_str());
         std::stringstream vsStream, fsStream;
         vsStream << vsFile.rdbuf();
         fsStream << fsFile.rdbuf();
@@ -22,9 +22,16 @@ ShaderConstructor::ShaderConstructor(const char* vsPath, const char* fsPath)
         std::cout << "ERROR [Shader Constructor]: file not successfully read" << std::endl;
     }
     
+    // insert macro definition - ps:glsl的第一行必须是#version...,所以宏只能放在version之后
+    size_t pos;
+    if((pos = vsString.find('\n')) != std::string::npos)
+        vsString.insert(pos, vsMacroString);
+    if((pos = fsString.find('\n')) != std::string::npos)
+        fsString.insert(pos, fsMacroString);
+    
     const char* vsCode = vsString.c_str();
     const char* fsCode = fsString.c_str();
-    
+
     int success;
     char infoLog[512];
     

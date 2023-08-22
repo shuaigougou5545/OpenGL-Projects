@@ -10,6 +10,7 @@
 
 class ImguiGenerator{
 public:
+    ImGuiIO* io;
     GLFWwindow* window;
     
     ImguiGenerator(GLFWwindow* w) : window(w){}

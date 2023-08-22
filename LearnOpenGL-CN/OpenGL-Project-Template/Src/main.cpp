@@ -133,7 +133,7 @@ int main()
     //
     // shader
     //
-    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
+    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag", "", "");
     
     
     //
@@ -193,8 +193,7 @@ int main()
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
         ImGui::End();
         

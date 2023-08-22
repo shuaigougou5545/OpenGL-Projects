@@ -812,6 +812,28 @@ $$
 M_n = (M^{-1})^T
 $$
 
+#### （3）平行光、电光源、手电筒
+
+##### 平行光
+
+- 光的描述：direction，不是position，光线不衰减
+
+##### 电光源
+
+- 光的描述：position，光线要衰减
+
+- 衰减方程：
+
+  - $$
+    F_{att}=\frac{1.0}{K_c+K_l*d+K_q*d^2}
+    $$
+
+    K<sub>c</sub>一般保持1，让分母始终大于1，另外两个分别是一次项和二次项，实现非线性的光线衰减
+
+    命名：constant、linear、quadratic
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308220950503.png" alt="截屏2023-08-22 09.50.11" style="zoom: 50%;" />
+
 
 
 ## C1 调试
