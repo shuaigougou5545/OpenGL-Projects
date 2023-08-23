@@ -840,6 +840,115 @@ $$
 
 ##### 聚光灯 - spot light
 
+距离聚光灯中心方向越近，光亮衰减越少；聚光灯边缘应该缓慢过渡到0，设计一个符合要求的衰减函数
+
+### 10.模型导入
+
+#### （1）Assimp库
+
+Assimp：Open Asset Import Library - 开放的资产到入库；Assimp能够导入很多种不同的模型文件格式
+
+> assimp3.31 mac编译(避坑) - 参考文章：https://cloud.tencent.com/developer/article/1649512
+>
+
+TODO：编译
+
+## S3 高级OpenGL渲染
+
+### 0.渲染管线
+
+
+
+### 1.深度测试
+
+```cpp
+glEnable(GL_DEPTH_TEST);
+
+// mainLoop
+glClear(GL_DEPTH_BUFFER_BIT);
+```
+
+深度缓冲是由窗口系统所创建的，有16、24或32位**float**的形式存储深度值，**在大部分操作系统中，深度缓冲的精度都是24位**（说白了由float的位数决定，一般操作系统sizeof(float)=4字节=32位）
+
+进行深度测试时，只读取深度值，但不写入深度值 - 关闭**深度掩码**：
+
+```cpp
+glDepthMask(GL_FALSE);
+```
+
+🤔️开启掩码：意味着数据能被正常写入；关闭掩码：意味着数据不允许写入；我的理解是：程序通过掩码的形式控制哪部分数据能写入，哪部分数据不能写入，故开启掩码意味着打开了数据写入的通道；同时可以从模版缓冲掩码验证我所说的
+
+深度测试函数：
+
+```cpp
+glDepthFunc(GL_LESS); // 默认
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308231623618.png" alt="截屏2023-08-23 16.23.37" style="zoom:50%;" />
+
+### 2.模版测试
+
+```cpp
+glEnable(GL_STENCIL_TEST);
+glClear(GL_STENCIL_BUFFER_BIT);
+glStencilMask(0xFF); // 默认:AND操作,默认所有掩码位都是1 - 1代表允许写入
+glStencilFunc(GL_EQUAL, 1, 0xFF); // 模版测试函数
+glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP); 
+```
+
+模版缓冲中，通常每个模版值是**8位**的（二进制的8位能创造出256种组合，8位就是char的大小），同样由窗口系统所管理
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308231644824.png" alt="截屏2023-08-23 16.44.10" style="zoom:50%;" />
+
+```cpp
+glStencilFunc(GLenum func, GLint ref, GLuint mask)
+```
+
+ref是参考值，也就是说只有满足了模版比较函数`func`，说明该像素通过了模版测试，则不丢弃
+
+```cpp
+glStencilOp(GLenum sfail, GLenum dpfail, GLenum dppass)
+```
+
+sfail：模版测试失败采取的行为；dpfail：模版测试通过，但深度测试失败时采取的行为；dppass：模版测试和深度测试都通过采取的行为
+
+![截屏2023-08-23 16.53.19](https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308231653387.png)
+
+总结一下模版缓冲的流程：
+
+- 开启模版缓冲
+- 开启模版缓冲的写入
+- 渲染物体时，更新模版缓冲的内容
+- 禁用模版缓冲的写入
+- 再渲染其他物体，根据模版缓冲的内容丢弃特定的片段	
+
+🤔️模版缓冲区能配置的和深度缓冲区一样吗？首先不可磨灭的不同之处就是，模版缓冲区存储的数据只有8位，而深度缓冲区能存储24位；深度缓冲区比较的是深度值信息，通过gl_Position.z获取，但模版缓冲区不能自定义模版值输入进去，模版值的更新只能通过glClear统一变为0，而且OpenGL模版缓冲提供的比较函数，不能实现保留最小模版值的操作
+
+⚠️注意：容易混淆：`glStencilFunc`和`glStencilMask`都提供缓冲掩码的参数，它们作用并不同；`glStencilFunc`：掩码是对参考值ref进行处理，它会与ref进行AND操作，以对参考值进行修改；而`glStencilMask`：掩码是指模版缓冲区哪些位允许被写入
+
+### 3.混合（Blend）
+
+
+
+### 4.特殊case：渲染镜子
+
+特殊case：渲染镜子
+
+- 先渲染镜子外的所有物体（不包括镜子）
+  - 开启深度缓冲`glEnable(GL_DEPTH_TEST)`
+  - 渲染
+- 再渲染镜面的模版缓冲区
+  - 清理模版缓冲区
+  - 开启模版缓冲`glEnable(GL_STENCIL_TEST)`，和深度缓冲
+  - 开启模版缓冲的写入`glStencilMask(0xFF);`，且设置模版函数为`glStencilFunc(GL_ALWAYS, 1, 0xFF)`，设置模版操作为`glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)`
+  - 但要关闭深度缓冲的写入
+  - 渲染镜子，以更新模版缓冲 => 此时镜面可见部分为1，其余部分为0
+- 然后渲染镜子之内（反射的）物体（虚像）
+  - 关闭模版缓冲	
+
+- 最后渲染镜子
+  - 采用混合技术
+
 ## C1 调试
 
 ### 1.glGetError()
@@ -1063,7 +1172,7 @@ GLSL对数组和自定义结构的支持很奇怪：
     glGetUniformLocation(ID, "lights[0].position"); // 1
     glGetUniformLocation(ID, "lights[1].strength"); // 2
     
-    glUniform1fv(glGetUniformLocation(ID, "lights[0].strength"), N * sizeof(Light) / sizeof(float), reinterpret_cast<float*>(lights)); // 也不行
+    glUniform1fv(glGetUniformLocation(ID, "lights[0].strength"), N * sizeof(Light) / sizeof(float), reinterpret_cast<float*>(lights)); // 这种trick方法也不行,TODO:查清楚为什么不行,有可能是内存对齐问题,或者是什么其他问题?
     ```
 
 🤔️为什么会是👆这种情况不知道，有可能是OpenGL/GLSL版本比较低，不支持，通过实际操作总结出以上规律；ChatGPT给我的解释是：
