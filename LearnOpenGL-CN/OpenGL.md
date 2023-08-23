@@ -1010,7 +1010,7 @@ glEnable(GL_CULL_FACE);
 glCullFace(GL_BACK); // 剔除背面(也是默认)
 ```
 
-有三种选项：`GL_BACK`、`GL_FRONT`、`GL_FRONT_AND_BACK`
+有三种选项：`GL_BACK`、`GL_FRONT`、`GL_FRONT_AND_BACK` => 想要正背面都不剔除，就不要开启面剔除
 
 修改默认绕序：
 
@@ -1019,6 +1019,47 @@ glFrontFace(GL_CW);; // clockwise -> 修改成顺时针
 ```
 
 `GL_CW`：顺时针 - clockwise；`GL_CCW`：逆时针（默认）- counter-clockwise
+
+### 🌟6.帧缓冲 - 渲染到纹理
+
+#### （1）帧缓冲
+
+```cpp
+unsigned int fbo;
+glGenFrameBuffers(1, &fbo);
+glBindFrameBuffer(GL_FRAMEBUFFER, fbo);
+
+glDeleteFrameBuffers(1, &fbo);
+```
+
+帧缓冲（Frame Buffer）：之前做的所有操作都作用于**默认帧缓冲**上，默认帧缓冲是我们在创建窗口时自动生成的（GLFW帮我们完成）
+
+创建和绑定已经很熟悉了，当我们绑定到`GL_FRAMEBUFFER`目标之后，所有的读取和写入帧缓冲的操作都会影响当前绑定的帧缓冲；当然，读取和写入目标可以分别绑定：`GL_READ_FRAMEBUFFER`、`GL_DRAW_FRAMEBUFFER`
+
+```cpp
+glBindFrameBuffer(GL_FRAMEBUFFER, 0); // 重新激活默认帧缓冲
+```
+
+“解绑”帧缓冲操作，就相当于重新激活默认帧缓冲，也就是主屏幕窗口的帧缓冲
+
+⚠️注意：要使用帧缓冲，必须保证它是“完整”的，也就是说要满足以下条件：（1）附加至少一个缓冲(颜色、深度或模版)（2）至少有一个<font color='red'>**颜色附件(Attachment)**</font>（3）所有的附件必须是完整的(保留了内存)（4）每个缓冲都应该有相同的样本数
+
+```c++
+if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+  // 帧缓冲符合要求
+```
+
+#### （2）附件
+
+附件：是一个内存位置，可以作为帧缓冲的一个缓冲，可以将它想象为一张图像
+
+附件有两种类型：**纹理附件** & **渲染缓冲对象附件**
+
+##### 纹理附件
+
+我们可以将创建的纹理对象(texture object)作为附件绑定到帧缓冲上，他的好处是：因为它是一张纹理，所以他可以很方便的传递到shader中（也就是具有texture object的一切特性）
+
+##### 渲染缓冲对象附件
 
 
 
