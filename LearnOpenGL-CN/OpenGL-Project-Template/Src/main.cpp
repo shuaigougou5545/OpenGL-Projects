@@ -14,18 +14,19 @@
 #include "DebugFunction.h"
 #include "Camera.h"
 #include "ShaderConstructor.h"
-#include "ShapeGenerator.h"
 #include "LoadTexture.h"
 #include "ImguiGenerator.h"
+#include "Model.h"
 
 #include "Material.h"
 #include "Light.h"
 
 
+
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.0f, 0.5f, -0.5f));
+Camera camera(glm::vec3(0.0f, 5.0f, 20.0f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -85,7 +86,7 @@ int main()
     //
     // vertex input:
     //
-    Box box;
+    Model skull("./Models/skull.txt");
     
     
     //
@@ -101,15 +102,13 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     
-    glBufferData(GL_ARRAY_BUFFER, box.vertices.size() * sizeof(float), box.vertices.data(), GL_STATIC_DRAW);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, box.indices.size() * sizeof(unsigned int), box.indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, skull.vertices_vbo.size() * sizeof(float), skull.vertices_vbo.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, skull.indices.size() * sizeof(unsigned int), skull.indices.data(), GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
 
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -125,9 +124,10 @@ int main()
     
     
     //
-    // depth
+    // Advanced OpenGL
     //
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
     
     
     //
@@ -159,6 +159,8 @@ int main()
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
+        ImGui::Text("Camera position: %.1f, %.1f, %.1f", camera.Position.x, camera.Position.y, camera.Position.z);
+        ImGui::Text("Camera front: %.1f, %.1f, %.1f", camera.Front.x, camera.Front.y, camera.Front.z);
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
@@ -171,8 +173,8 @@ int main()
         //
         glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
         
-        model = glm::translate(model, glm::vec3(0.f, 0.f, -5.f));
-        model = glm::rotate(model, glm::radians(float(glfwGetTime()) * 10.0f), glm::vec3(0.5f, 0.5f, 0.5f));
+        model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
+        model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
         model = glm::scale(model, glm::vec3(1.f));
         
         view = camera.GetViewMatrix();
@@ -221,24 +223,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
         glBindVertexArray(VAO);
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-        //
-        // Light Box
-        //
-//        trans = light.position;
-//        scale = glm::vec3(0.1f);
-//        model = glm::translate(model, trans);
-//        model = glm::scale(model, scale);
-//        mat.diffuseAlbedo = glm::vec3(1.0);
-//        mat.fresnelR0 = glm::vec3(1.0);
-//        mat.roughness = 1.0f;
-//        sc.setMat4("model", glm::value_ptr(model));
-//        sc.setVec3("mat0.diffuseAlbedo", glm::value_ptr(mat.diffuseAlbedo));
-//        sc.setVec3("mat0.fresnelR0", glm::value_ptr(mat.fresnelR0));
-//        sc.setFloat("mat0.roughness", mat.roughness);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
+//        glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
         
         
         ig.DrawWindow();

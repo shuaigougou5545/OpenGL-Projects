@@ -928,7 +928,55 @@ sfail：模版测试失败采取的行为；dpfail：模版测试通过，但深
 
 ### 3.混合（Blend）
 
+#### （1）alpha通道 
 
+一些图片会带有alpha通道值，用于告诉我们哪些部分是透明的
+
+#### （2）discard
+
+如果不开启混合，alpha值可能没被运用起来，我们可以通过判断alpha是否几乎为0，以此来判断是否丢弃该像素 => 像素着色器提供内建函数`discard`
+
+```glsl
+if(texColor.a < 0.1)
+	discard;
+```
+
+这种处理方式是很trick的，但是注意，纹理的环绕方式可能会影响该操作：也就是说，纹理边缘会进行插值，可能会导致alpha通道也进行插值，而导致错误显示
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308231807077.png" alt="截屏2023-08-23 18.07.12" style="zoom:50%;" />
+
+#### （3）混合
+
+```cpp
+glEnable(GL_BLEND);
+// 很多种方式控制blend方程
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+glBlendEquation(GL_FUNC_ADD); // 一般也不会修改这个"+"
+```
+
+混合运算采用👇方程的形式：
+$$
+C_{result}=C_{source}*F_{source}+C_{destination}*F_{destination}
+$$
+源颜色和目标颜色都各自有一个系数，这个系数是我们可以设置的，来控制混合方程
+
+**源颜色**：当前像素着色器输出的颜色，或者叫当前渲染像素的颜色；**目标颜色**：颜色缓冲区里存储的颜色
+
+```cpp
+glBlendFunc(GLenum sfactor, GLenum dfactor)
+glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha)
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308231812234.png" alt="截屏2023-08-23 18.12.18" style="zoom:50%;" />
+
+Blend方程中的运算符：
+
+```cpp
+glBlendEquation(GLenum mode)
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308232014253.png" alt="截屏2023-08-23 20.14.09" style="zoom:50%;" />
 
 ### 4.特殊case：渲染镜子
 
@@ -948,6 +996,31 @@ sfail：模版测试失败采取的行为；dpfail：模版测试通过，但深
 
 - 最后渲染镜子
   - 采用混合技术
+
+### 5.面剔除
+
+#### （1）环绕顺序
+
+<font color='red'>**默认情况下：逆时针绕序会被视为正向的三角形**</font>
+
+#### （2）面剔除
+
+```cpp
+glEnable(GL_CULL_FACE);
+glCullFace(GL_BACK); // 剔除背面(也是默认)
+```
+
+有三种选项：`GL_BACK`、`GL_FRONT`、`GL_FRONT_AND_BACK`
+
+修改默认绕序：
+
+```cpp
+glFrontFace(GL_CW);; // clockwise -> 修改成顺时针
+```
+
+`GL_CW`：顺时针 - clockwise；`GL_CCW`：逆时针（默认）- counter-clockwise
+
+
 
 ## C1 调试
 

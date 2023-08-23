@@ -35,7 +35,6 @@ out vec4 FragColor;
 
 in vec3 PosW;
 in vec3 NormalW;
-in vec2 TexCoords;
 
 uniform vec4 gAmbientLight;
 uniform Light gLights[MaxLights];
