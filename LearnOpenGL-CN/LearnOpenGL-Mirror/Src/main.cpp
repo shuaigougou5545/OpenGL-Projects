@@ -26,7 +26,7 @@
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-Camera camera(glm::vec3(0.0f, 5.0f, 20.0f));
+Camera camera(glm::vec3(0.0f, 3.0f, 10.0f));
 
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -136,12 +136,10 @@ int main()
         glfwPollEvents();
         
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         
         ig.InitWindow();
         ImGui::Begin("OpenGL");
-        
-        
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
@@ -197,11 +195,12 @@ int main()
         // 1.box
         //
         glEnable(GL_DEPTH_TEST);
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 5.f));
+        model = glm::mat4(1.0);
+        model = glm::translate(model, glm::vec3(0.f, 0.0f, 0.f));
         model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(1.f));
+        model = glm::scale(model, glm::vec3(2.f));
         sc.setMat4("model", glm::value_ptr(model));
-    
+
         mat.FresnelR0 = glm::vec3(0.05f);
         mat.Roughness = 0.3f;
         mat.DiffuseAlbedo = glm::vec4(1.0f);
@@ -210,18 +209,58 @@ int main()
         sc.setFloat("gMat.Roughness", mat.Roughness);
         glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
         
+        //
+        // 2.mirror(stencil)
+        //
+        glDepthMask(0x00);
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glEnable(GL_STENCIL_TEST);
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        model = glm::mat4(1.0);
+        model = glm::translate(model, glm::vec3(0.f, 0.0f, -2.f));
+        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 0.2f));
+        sc.setMat4("model", glm::value_ptr(model));
+        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glDepthMask(0xFF);
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        
         
         //
-        // 2.floor
+        // 3.box(in mirror)
         //
-//        model = glm::translate(model, glm::vec3(0.f, -0.1f, 0.f));
-//        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-//        model = glm::scale(model, glm::vec3(10.f, 0.1f, 10.f));
-//        sc.setMat4("model", glm::value_ptr(model));
-//        mat.DiffuseAlbedo = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-//        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
-//        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glStencilFunc(GL_EQUAL, 1, 0xFF);
+        // TODO: recalculate box position
+        model = glm::mat4(1.0);
+        model = glm::translate(model, glm::vec3(0.f, 0.0f, -4.f));
+        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, glm::vec3(2.f));
+        sc.setMat4("model", glm::value_ptr(model));
+        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glDisable(GL_STENCIL_TEST);
         
+        
+        //
+        // 4.mirror
+        //
+        glEnable(GL_BLEND);
+        glDepthMask(0x00);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        model = glm::mat4(1.0);
+        model = glm::translate(model, glm::vec3(0.f, 0.0f, -2.f));
+        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 0.2f));
+        sc.setMat4("model", glm::value_ptr(model));
+        mat.FresnelR0 = glm::vec3(0.05f);
+        mat.Roughness = 0.3f;
+        mat.DiffuseAlbedo = glm::vec4(0.1f, 0.1f, 0.1f, 0.2f);
+        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
+        sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
+        sc.setFloat("gMat.Roughness", mat.Roughness);
+        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glDepthMask(0xFF);
         
         ig.DrawWindow();
         glfwSwapBuffers(window);
