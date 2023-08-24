@@ -86,7 +86,7 @@ int main()
     //
     // vertex input:
     //
-    Model skull("./Models/box.txt");
+    Model box("./Models/box.txt");
     
     
     //
@@ -102,8 +102,8 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     
-    glBufferData(GL_ARRAY_BUFFER, skull.vertices_vbo.size() * sizeof(float), skull.vertices_vbo.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, skull.indices.size() * sizeof(unsigned int), skull.indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, box.vertices_vbo.size() * sizeof(float), box.vertices_vbo.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, box.indices.size() * sizeof(unsigned int), box.indices.data(), GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -114,36 +114,13 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    
-    //
-    // texture
-    //
-    unsigned int texture;
-    texture = loadTexture("./Textures/container2.png");
-    
-    
-    //
-    // Advanced OpenGL
-    //
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
     
     
     //
     // shader
     //
     ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag", "", "");
-    
-    
-    //
-    // other
-    //
     sc.use();
-    sc.setInt("gMat.DiffuseTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
     
     
     while(!glfwWindowShouldClose(window))
@@ -152,16 +129,29 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         
+        glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
+        Material mat;
+        
         processInput(window);
         glfwPollEvents();
         
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         ig.InitWindow();
         ImGui::Begin("OpenGL");
+        
+        
         
         int window_width = 0, window_height = 0;
         glfwGetWindowSize(window, &window_width, &window_height);
         ImGui::Text("Camera position: %.1f, %.1f, %.1f", camera.Position.x, camera.Position.y, camera.Position.z);
         ImGui::Text("Camera front: %.1f, %.1f, %.1f", camera.Front.x, camera.Front.y, camera.Front.z);
+        
+        static bool cull_back = true;
+        ImGui::Checkbox("Cull back", &cull_back);
+        cull_back ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+        
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
@@ -170,34 +160,7 @@ int main()
         
         
         //
-        // Box
-        //
-        glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
-        
-        model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(5.f));
-        
-        view = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
-    
-        sc.setMat4("model", glm::value_ptr(model));
-        sc.setMat4("view", glm::value_ptr(view));
-        sc.setMat4("projection", glm::value_ptr(projection));
-        
-        
-        Material mat;
-        mat.FresnelR0 = glm::vec3(0.05f);
-        mat.Roughness = 0.3f;
-        mat.DiffuseAlbedo = glm::vec4(0.69f, 0.77f, 0.87f, 1.0f);
-
-        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
-        sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
-        sc.setFloat("gMat.Roughness", mat.Roughness);
-        
-        
-        //
-        // Lights
+        // Shared Uniform: Lights, view, projection
         //
         glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
         sc.setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
@@ -216,20 +179,51 @@ int main()
         sc.setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
         sc.setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
         sc.setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
-        
-
         sc.setVec3("gViewPos", glm::value_ptr(camera.Position));
         
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+        view = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
+        sc.setMat4("view", glm::value_ptr(view));
+        sc.setMat4("projection", glm::value_ptr(projection));
+        
+        
+        //
+        // Shared Status: VAO
+        //
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
-//        glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
+        
+        
+        //
+        // 1.box
+        //
+        glEnable(GL_DEPTH_TEST);
+        model = glm::translate(model, glm::vec3(0.f, 0.f, 5.f));
+        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, glm::vec3(1.f));
+        sc.setMat4("model", glm::value_ptr(model));
+    
+        mat.FresnelR0 = glm::vec3(0.05f);
+        mat.Roughness = 0.3f;
+        mat.DiffuseAlbedo = glm::vec4(1.0f);
+        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
+        sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
+        sc.setFloat("gMat.Roughness", mat.Roughness);
+        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        
+        
+        //
+        // 2.floor
+        //
+//        model = glm::translate(model, glm::vec3(0.f, -0.1f, 0.f));
+//        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
+//        model = glm::scale(model, glm::vec3(10.f, 0.1f, 10.f));
+//        sc.setMat4("model", glm::value_ptr(model));
+//        mat.DiffuseAlbedo = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+//        sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
+//        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
         
         
         ig.DrawWindow();
-        
         glfwSwapBuffers(window);
     }
     

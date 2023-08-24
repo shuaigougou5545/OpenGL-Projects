@@ -170,8 +170,6 @@ void main()
     
     vec4 col = ambient + directLight;
     
-    col = vec4(PosA + 0.5, 1.0);
-    
     FragColor = col;
 }
 
