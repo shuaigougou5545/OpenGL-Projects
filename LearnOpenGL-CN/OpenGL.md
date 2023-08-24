@@ -1059,6 +1059,29 @@ if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 
 我们可以将创建的纹理对象(texture object)作为附件绑定到帧缓冲上，他的好处是：因为它是一张纹理，所以他可以很方便的传递到shader中（也就是具有texture object的一切特性）
 
+```cpp
+unsigned int texture;
+glGenTextures(1, &texture);
+glBindTexture(GL_TEXTURE_2D, texture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL); // 给data参数传NULL
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+```
+
+作为纹理附件的纹理不关心环绕方式和mipmap，因为我们大多情况下不会用到他们
+
+注意：纹理的宽和高一般设置的和屏幕宽高一样，但如果想要将屏幕渲染到一个更大或更小的纹理上，注意需要在渲染前**重新设置glViewport**，将纹理的新维度作为参数，否则只有一小部分会被渲染到纹理上
+
+将纹理附加到帧缓冲上：
+
+```cpp
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+```
+
+最后一个参数是mipmap级别，我们保留为0
+
+
+
 ##### 渲染缓冲对象附件
 
 

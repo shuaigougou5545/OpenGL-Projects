@@ -41,7 +41,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		941FD6092A8649B200C932DD /* OpenGL-Project-Template */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenGL-Project-Template"; sourceTree = BUILT_PRODUCTS_DIR; };
+		941FD6092A8649B200C932DD /* LearnOpenGL-Mirror */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "LearnOpenGL-Mirror"; sourceTree = BUILT_PRODUCTS_DIR; };
 		941FD60C2A8649B200C932DD /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		941FD6142A864A0F00C932DD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -65,7 +65,7 @@
 		9457067F2A8B249600C1D597 /* imgui_demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_demo.cpp; sourceTree = "<group>"; };
 		945706802A8B249600C1D597 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
 		945851322A8E2C70008E7FAB /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
-		94659B7A2A97567E0043E81E /* box.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = box.txt; sourceTree = "<group>"; };
+		94659B7B2A9757210043E81E /* box.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = box.txt; sourceTree = "<group>"; };
 		947E38CD2A96456C0055BBF8 /* triangle.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = triangle.txt; sourceTree = "<group>"; };
 		947E38CF2A9648110055BBF8 /* square.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = square.txt; sourceTree = "<group>"; };
 		94AB12A22A887DC10004D601 /* ShaderConstructor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderConstructor.h; sourceTree = "<group>"; };
@@ -545,7 +545,7 @@
 		941FD60A2A8649B200C932DD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				941FD6092A8649B200C932DD /* OpenGL-Project-Template */,
+				941FD6092A8649B200C932DD /* LearnOpenGL-Mirror */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1098,7 +1098,7 @@
 		94ECD3272A96334600FE034E /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				94659B7A2A97567E0043E81E /* box.txt */,
+				94659B7B2A9757210043E81E /* box.txt */,
 				947E38CF2A9648110055BBF8 /* square.txt */,
 				947E38CD2A96456C0055BBF8 /* triangle.txt */,
 				94ECD3292A96343800FE034E /* car.txt */,
@@ -1126,9 +1126,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		941FD6082A8649B200C932DD /* OpenGL-Project-Template */ = {
+		941FD6082A8649B200C932DD /* LearnOpenGL-Mirror */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "OpenGL-Project-Template" */;
+			buildConfigurationList = 941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "LearnOpenGL-Mirror" */;
 			buildPhases = (
 				941FD6052A8649B200C932DD /* Sources */,
 				941FD6062A8649B200C932DD /* Frameworks */,
@@ -1138,9 +1138,9 @@
 			);
 			dependencies = (
 			);
-			name = "OpenGL-Project-Template";
+			name = "LearnOpenGL-Mirror";
 			productName = "OpenGL-Project-Template";
-			productReference = 941FD6092A8649B200C932DD /* OpenGL-Project-Template */;
+			productReference = 941FD6092A8649B200C932DD /* LearnOpenGL-Mirror */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -1157,7 +1157,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 941FD6042A8649B200C932DD /* Build configuration list for PBXProject "OpenGL-Project-Template" */;
+			buildConfigurationList = 941FD6042A8649B200C932DD /* Build configuration list for PBXProject "LearnOpenGL-Mirror" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1170,7 +1170,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				941FD6082A8649B200C932DD /* OpenGL-Project-Template */,
+				941FD6082A8649B200C932DD /* LearnOpenGL-Mirror */,
 			);
 		};
 /* End PBXProject section */
@@ -1346,7 +1346,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		941FD6042A8649B200C932DD /* Build configuration list for PBXProject "OpenGL-Project-Template" */ = {
+		941FD6042A8649B200C932DD /* Build configuration list for PBXProject "LearnOpenGL-Mirror" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				941FD60E2A8649B200C932DD /* Debug */,
@@ -1355,7 +1355,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "OpenGL-Project-Template" */ = {
+		941FD6102A8649B200C932DD /* Build configuration list for PBXNativeTarget "LearnOpenGL-Mirror" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				941FD6112A8649B200C932DD /* Debug */,
