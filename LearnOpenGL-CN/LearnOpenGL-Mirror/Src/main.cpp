@@ -87,23 +87,42 @@ int main()
     // vertex input:
     //
     Model box("./Models/box.txt");
-    
+    Model skull("./Models/skull.txt");
     
     //
     // VAO VBO EBO
     //
-    unsigned int VAO, VBO, EBO;
+    unsigned int VAO[2], VBO[2], EBO[2];
     
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(2, VAO);
+    glGenBuffers(2, VBO);
+    glGenBuffers(2, EBO);
     
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // box
+    glBindVertexArray(VAO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
     
     glBufferData(GL_ARRAY_BUFFER, box.vertices_vbo.size() * sizeof(float), box.vertices_vbo.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, box.indices.size() * sizeof(unsigned int), box.indices.data(), GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    // skull
+    glBindVertexArray(VAO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+    
+    glBufferData(GL_ARRAY_BUFFER, skull.vertices_vbo.size() * sizeof(float), skull.vertices_vbo.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, skull.indices.size() * sizeof(unsigned int), skull.indices.data(), GL_STATIC_DRAW);
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -119,9 +138,8 @@ int main()
     //
     // shader
     //
-    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag", "", "");
+    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
     sc.use();
-    
     
     while(!glfwWindowShouldClose(window))
     {
@@ -145,11 +163,6 @@ int main()
         glfwGetWindowSize(window, &window_width, &window_height);
         ImGui::Text("Camera position: %.1f, %.1f, %.1f", camera.Position.x, camera.Position.y, camera.Position.z);
         ImGui::Text("Camera front: %.1f, %.1f, %.1f", camera.Front.x, camera.Front.y, camera.Front.z);
-        
-        static bool cull_back = true;
-        ImGui::Checkbox("Cull back", &cull_back);
-        cull_back ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
-        
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
@@ -186,19 +199,22 @@ int main()
         
         
         //
-        // Shared Status: VAO
+        // Shared Status: CULL_FACE
         //
-        glBindVertexArray(VAO);
-        
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
         
         //
         // 1.box
         //
         glEnable(GL_DEPTH_TEST);
+        glm::vec3 box_trans = glm::vec3(cos(glfwGetTime()/2.0)*5.0, sin(glfwGetTime()/2.0)*3.0, 5.f);
+        float angle = 180.0f + glfwGetTime() * 20.0f;
+        glm::vec3 box_scale = glm::vec3(0.5f);
         model = glm::mat4(1.0);
-        model = glm::translate(model, glm::vec3(0.f, 0.0f, 0.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(2.f));
+        model = glm::translate(model, box_trans);
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, box_scale);
         sc.setMat4("model", glm::value_ptr(model));
 
         mat.FresnelR0 = glm::vec3(0.05f);
@@ -207,11 +223,24 @@ int main()
         sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
         sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
         sc.setFloat("gMat.Roughness", mat.Roughness);
-        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO[1]);
+        glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
         
         //
         // 2.mirror(stencil)
         //
+        // mirror plane function
+        glm::vec3 N = glm::vec3(0.f, 0.f, 1.f);
+        glm::vec3 P0 = glm::vec3(0.f, 0.f, 0.f);
+        glm::vec3 mirror_trans = P0;
+        glm::vec3 mirror_scale = glm::vec3(12.0f, 12.0f, 0.01f);
+        
+        glm::mat4 M = glm::mat4(1.0);
+        glm::vec3 m1 = glm::vec3(2 * glm::dot(N, P0));
+        M = glm::translate(M, m1);
+        glm::vec3 m2 = glm::vec3(1.f) - 2.f * N;
+        M = glm::scale(M, m2);
+        
         glDepthMask(0x00);
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glEnable(GL_STENCIL_TEST);
@@ -219,10 +248,10 @@ int main()
         glStencilFunc(GL_ALWAYS, 1, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         model = glm::mat4(1.0);
-        model = glm::translate(model, glm::vec3(0.f, 0.0f, -2.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 0.2f));
+        model = glm::translate(model, mirror_trans);
+        model = glm::scale(model, mirror_scale);
         sc.setMat4("model", glm::value_ptr(model));
+        glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
         glDepthMask(0xFF);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -231,27 +260,36 @@ int main()
         //
         // 3.box(in mirror)
         //
+        glCullFace(GL_FRONT);
         glStencilFunc(GL_EQUAL, 1, 0xFF);
-        // TODO: recalculate box position
+        // light reflect
+        auto ld1 = glm::mat3(M) * lights[0].Direction;
+        auto ld2 = glm::mat3(M) * lights[1].Direction;
+        auto ld3 = glm::mat3(M) * lights[2].Direction;
+        sc.setVec3("gLights[0].Direction", glm::value_ptr(ld1));
+        sc.setVec3("gLights[1].Direction", glm::value_ptr(ld2));
+        sc.setVec3("gLights[2].Direction", glm::value_ptr(ld3));
         model = glm::mat4(1.0);
-        model = glm::translate(model, glm::vec3(0.f, 0.0f, -4.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(2.f));
+        model = model * M;
+        model = glm::translate(model, box_trans);
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(0.f, 1.f, 0.f));
+        model = glm::scale(model, box_scale);
         sc.setMat4("model", glm::value_ptr(model));
-        glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO[1]);
+        glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
         glDisable(GL_STENCIL_TEST);
         
         
         //
         // 4.mirror
         //
+        glCullFace(GL_BACK);
         glEnable(GL_BLEND);
         glDepthMask(0x00);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         model = glm::mat4(1.0);
-        model = glm::translate(model, glm::vec3(0.f, 0.0f, -2.f));
-        model = glm::rotate(model, glm::radians(0.f), glm::vec3(0.f, 1.f, 0.f));
-        model = glm::scale(model, glm::vec3(5.0f, 5.0f, 0.2f));
+        model = glm::translate(model, mirror_trans);
+        model = glm::scale(model, mirror_scale);
         sc.setMat4("model", glm::value_ptr(model));
         mat.FresnelR0 = glm::vec3(0.05f);
         mat.Roughness = 0.3f;
@@ -259,6 +297,10 @@ int main()
         sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
         sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
         sc.setFloat("gMat.Roughness", mat.Roughness);
+        sc.setVec3("gLights[0].Direction", glm::value_ptr(lights[0].Direction));
+        sc.setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
+        sc.setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
+        glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, int(box.indices.size()), GL_UNSIGNED_INT, 0);
         glDepthMask(0xFF);
         
@@ -266,9 +308,9 @@ int main()
         glfwSwapBuffers(window);
     }
     
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(2, VBO);
+    glDeleteBuffers(2, EBO);
+    glDeleteVertexArrays(2, VAO);
     sc.destory();
     
     ImGui_ImplOpenGL3_Shutdown();
