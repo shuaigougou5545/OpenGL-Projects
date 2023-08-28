@@ -86,21 +86,60 @@ int main()
     //
     // vertex input:
     //
-    Model skull("./Models/skull.txt");
+    Model skull("./Models/box.txt");
+    
+    
+    //
+    // Render to Texture
+    //
+    unsigned int fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    unsigned int texColorBuffer;
+    glGenTextures(1, &texColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
+    
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    
+    float quad_vertices[] = {
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f,
+    };
     
     
     //
     // VAO VBO EBO
     //
-    unsigned int VAO, VBO, EBO;
+    unsigned int VAO[2], VBO[2], EBO[2];
     
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(2, VAO);
+    glGenBuffers(2, VBO);
+    glGenBuffers(2, EBO);
     
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindVertexArray(VAO[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[0]);
     
     glBufferData(GL_ARRAY_BUFFER, skull.vertices_vbo.size() * sizeof(float), skull.vertices_vbo.data(), GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, skull.indices.size() * sizeof(unsigned int), skull.indices.data(), GL_STATIC_DRAW);
@@ -114,13 +153,22 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    glBindVertexArray(VAO[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertices), quad_vertices, GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     
-    //
-    // texture
-    //
-    unsigned int texture;
-    texture = loadTexture("./Textures/container2.png");
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
     
     //
@@ -134,41 +182,12 @@ int main()
     //
     // shader
     //
-    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag", "", "");
+    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
+    ShaderConstructor quad_sc("./Shaders/quad_vs.vert", "./Shaders/quad_fs.frag");
     
     
-    //
-    // Render to Texture
-    //
-    unsigned int fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    unsigned int texture_fb;
-    glGenTextures(1, &texture_fb);
-    glBindTexture(GL_TEXTURE_2D, texture_fb);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_fb, 0);
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        std::cout << "ERROR [framebuffer]: Framebuffer is not complete!'" << std::endl;
-        return -1;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
-    
-    //
-    // other
-    //
-    sc.use();
-    sc.setInt("gMat.DiffuseTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    
     
     while(!glfwWindowShouldClose(window))
     {
@@ -178,9 +197,6 @@ int main()
         
         processInput(window);
         glfwPollEvents();
-        
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         ig.InitWindow();
         ImGui::Begin("OpenGL");
@@ -196,9 +212,7 @@ int main()
         ImGui::Render();
         
         
-        //
-        // Shared: Uniform
-        //
+        sc.use();
         glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
         
         view = camera.GetViewMatrix();
@@ -230,6 +244,10 @@ int main()
         //
         // Skull
         //
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glEnable(GL_DEPTH_TEST);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         model = glm::mat4(1.0);
         model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
         model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
@@ -244,19 +262,28 @@ int main()
         sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
         sc.setFloat("gMat.Roughness", mat.Roughness);
     
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
-//        glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
         
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+//        glDisable(GL_DEPTH_TEST);
+        quad_sc.use();
+        quad_sc.setInt("screenTexture", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+        glBindVertexArray(VAO[1]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         
         ig.DrawWindow();
         
         glfwSwapBuffers(window);
     }
     
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(2, VBO);
+    glDeleteBuffers(2, EBO);
+    glDeleteVertexArrays(2, VAO);
     sc.destory();
     
     ImGui_ImplOpenGL3_Shutdown();

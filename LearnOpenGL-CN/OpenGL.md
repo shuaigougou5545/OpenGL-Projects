@@ -1080,11 +1080,47 @@ glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, text
 
 最后一个参数是mipmap级别，我们保留为0
 
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308251633152.png" alt="截屏2023-08-25 16.33.36" style="zoom:50%;" />
 
+##### (?)渲染缓冲对象附件
 
-##### 渲染缓冲对象附件
+渲染缓冲对象是后来引入OpenGL的，过去纹理是唯一的可用附件；渲染缓冲对象是一个真正的缓冲
 
+（?）**使用渲染缓冲对象附件的好处：它会将数据存储为OpenGL原生的渲染格式，它是为离屏渲染到帧缓冲优化过的**；它直接将渲染数据存储到缓冲中，不会进行任何格式转换，变成一个“写”的更快的可存储介质；一般来说，渲染缓冲对象是**只写的**，一般不能读取它们（比如纹理访问）；但仍然可以通过`glReadPixels`来读取，但这种读取方式是从当前绑定的帧缓冲中返回像素，而不是附件本身
 
+**好处总结：快速写入、快速交换缓冲、数据原生（格式不会转换）**
+
+```cpp
+unsigned int rbo;
+glGenRenderbuffers(1, &rbo);
+glBindRenderbuffers(GL_RENDERBUFFER, rbo);
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308251641933.png" alt="截屏2023-08-25 16.41.07" style="zoom:50%;" />
+
+创建深度和模版缓冲对象：
+
+```cpp
+glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+```
+
+##### 如何选择？
+
+- 纹理附件：当需要采样（texture函数）时，则使用纹理附件
+- 渲染缓冲对象附件：当不需要采样（texture函数）时，则使用渲染缓冲对象附件
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308251647838.png" alt="截屏2023-08-25 16.46.19" style="zoom:50%;" />
+
+说白了：默认的一定足够通用，但性能一定不是最好，OpenGL开放这种定制途径，可以让我们更好的自定义我们需要的缓冲、对象等，可以提高性能
+
+#### （3）渲染到纹理
+
+我们需要创建一个shader处理**全屏四边形**（**quad**），这里要注意⚠️：OpenGL的NDC空间的定义中，x和y的范围是-1～1，而不是0～1
+
+##### ⚠️⚠️⚠️注意：如果新创建了一个帧缓冲，因为帧缓冲中包含颜色附件和深度附件等，所以如果我们只附加了颜色附加，则该帧缓冲的深度测试失效！
+
+![截屏2023-08-26 21.40.27](https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308262143430.png)
 
 ## C1 调试
 
@@ -1145,10 +1181,17 @@ glslangValidator xxx.vert
 **Mac平台调试图形应用程序**：【ChatGPT推荐】
 
 - <font color='purple'>**Render Doc**</font>
+
+  - > 参考博客：https://cloud.tencent.com/developer/article/2071212?areaSource=102001.1&traceId=P4orT5916tzcyP5_HS6_2 
+
+  - 根据开发者所说，当前Render Doc在Mac的支持是有限的，只能保证编译通过
+
 - Xcode 和 Instruments
+
   - Instruments作为Xcode内置的性能分析工具，能够分析CPU、内存、图形性能等
   - 对于图形调试，你可以使用 Instruments 中的 "OpenGL ES Analyzer"（针对 OpenGL ES）或者 "Metal System Trace"（针对 Metal）工具来分析图形性能和资源使用情况
-- OpenGL Profiler
+
+- ~~OpenGL Profiler~~（已被Mac弃用）
   - macOS内置的图形分析工具，用于OpenGL应用程序的性能分析
   - 也是内置在Xcode-Instruments中
 
