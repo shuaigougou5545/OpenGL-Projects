@@ -1122,6 +1122,8 @@ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDER
 
 ![截屏2023-08-26 21.40.27](https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308262143430.png)
 
+🤔️问题：当我在运行程序时，发现屏幕发现扭曲，实测发现：当增大一倍纹理分辨率后，该现象消失
+
 ## C1 调试
 
 ### 1.glGetError()
