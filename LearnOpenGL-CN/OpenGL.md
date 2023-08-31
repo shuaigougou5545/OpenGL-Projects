@@ -1122,7 +1122,7 @@ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDER
 
 ![截屏2023-08-26 21.40.27](https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308262143430.png)
 
-🤔️问题：当我在运行程序时，发现屏幕发现扭曲，实测发现：当增大一倍纹理分辨率后，该现象消失
+🤔️问题：当我在运行程序时，发现屏幕发现扭曲，实测发现：当增大一倍纹理分辨率后，该现象消失 => 可能原因：TODO待分析
 
 ## C1 调试
 
@@ -1281,7 +1281,7 @@ ImGui::End();
 
 `Begin()`和`End()`之间是一个窗口组件，窗口中可以设置各种控件，这个就不一一介绍了，这些渲染指令调用需要在上述👆几个函数之间使用
 
-> 常用控件参考博客：https://zhuanlan.zhihu.com/p/485376285
+> 🌟常用控件参考博客：https://zhuanlan.zhihu.com/p/485376285
 
 **DemoWindow**
 
@@ -1377,6 +1377,51 @@ TODO：补充～
 ### 3.优化
 
 shader中uniform变量如果没有用到，则会被优化删除掉，所以会导致glGetUniformLocation找不到位置值，只是一个很严重的bug
+
+## C4  OpenGL导出图片
+
+#### 1.bmp
+
+> 参考文章：https://zhuanlan.zhihu.com/p/508507043?utm_id=0
+>
+> https://blog.csdn.net/u013412391/article/details/120565095
+
+需要使用`glReadPixels()`函数，这个函数用于读取已经绘制好的像素信息，并将显存中数据读取到内存中
+
+```cpp
+void glReadPixels（GLint x, 
+		   GLint y,           → 左下角坐标
+		   GLsizei width,
+		   GLsizei height,    → 前四个参数描述了一个矩形范围 Rect2()
+	     GLenum format,     → 像素存储的格式
+		   GLenum type,       → 像素数据的数据类型
+	     GLvoid * data）;   →返回像素数据
+```
+
+使用方法：
+
+```cpp
+// step 1: 申请内存,存放像素数据
+RGBColor* ColorBuffer = new RGBColor[WindowSizeX * WindowSizeY];
+// step 2: 从显存中读取像素
+glReadPixels(0, 0, WindowSizeX, WindowSizeY, GL_BGR, GL_UNSIGNED_BYTE, ColorBuffer);
+// step 3: 将数据写入目标图片文件
+WriteBMP("output.bmp", ColorBuffer, WindowSizeX, WindowSizeY);
+// step 4: 释放申请的内存
+delete[] ColorBuffer;
+```
+
+这里WriteBMP函数需要我们自己去实现，BMP文件格式相当简单明了，很容易自己创建，这里在网上抄了一段（懒得自己写了）
+
+TODO：这个博客写的好像不对，输出的bmp图片打不开
+
+#### 2.stb_image库
+
+本身stb_image库就是用来处理图像的，我们之前用它来解析纹理图片，现在我们研究它的导出图片功能
+
+chatgpt推荐我们使用这个作者的另一个库，叫做`stb_image_write`，专门用于将数据写入文件
+
+
 
 ## Q1 多线程
 
