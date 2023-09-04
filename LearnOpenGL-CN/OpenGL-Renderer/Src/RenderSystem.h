@@ -9,13 +9,15 @@
 #include <vector>
 
 #include "DebugFunction.h"
-#include "ShaderConstructor.h"
 #include "LoadTexture.h"
+
+#include "ShaderConstructor.h"
+
 #include "Model.h"
 #include "Light.h"
 #include "Material.h"
 
-//#include "WindowSystem.h"
+#include "WindowSystem.h"
 
 
 namespace rd {

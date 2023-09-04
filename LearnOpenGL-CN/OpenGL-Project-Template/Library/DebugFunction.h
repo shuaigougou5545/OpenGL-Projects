@@ -2,7 +2,6 @@
 #define DebugFunction_h
 
 #include <glad/glad.h>
-#include <iostream>
 
 
 GLenum glCheckError_(const char *file, int line);

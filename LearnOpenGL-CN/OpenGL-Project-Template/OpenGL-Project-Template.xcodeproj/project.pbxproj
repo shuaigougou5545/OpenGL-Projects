@@ -18,6 +18,8 @@
 		945706852A8B249600C1D597 /* imgui_impl_glfw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067E2A8B249600C1D597 /* imgui_impl_glfw.cpp */; };
 		945706862A8B249600C1D597 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067F2A8B249600C1D597 /* imgui_demo.cpp */; };
 		945706872A8B249600C1D597 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706802A8B249600C1D597 /* imgui_draw.cpp */; };
+		948A35A12AA5ABB70009CCFC /* DebugFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35A02AA5ABB70009CCFC /* DebugFunction.cpp */; };
+		948A35A52AA5AD450009CCFC /* LoadTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35A42AA5AD450009CCFC /* LoadTexture.cpp */; };
 		94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12AF2A88CA630004D601 /* stb_image.cpp */; };
 		94AB12B22A88CAA00004D601 /* glad.c in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12B12A88CAA00004D601 /* glad.c */; };
 		94AB14602A89CB2A0004D601 /* glm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB13A32A89CB2A0004D601 /* glm.cpp */; };
@@ -47,7 +49,6 @@
 		941FD6142A864A0F00C932DD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		941FD61A2A864A3800C932DD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		941FD6212A864C5200C932DD /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../../3rd_party/GLFW/lib/libglfw3.a; sourceTree = "<group>"; };
-		942DE25D2AA0BB9900187F1C /* BMP.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMP.h; sourceTree = "<group>"; };
 		942DE2602AA0CD6900187F1C /* stb_image_write.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image_write.h; sourceTree = "<group>"; };
 		9457066F2A8B249600C1D597 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		945706702A8B249600C1D597 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
@@ -71,6 +72,8 @@
 		94659B7A2A97567E0043E81E /* box.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = box.txt; sourceTree = "<group>"; };
 		947E38CD2A96456C0055BBF8 /* triangle.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = triangle.txt; sourceTree = "<group>"; };
 		947E38CF2A9648110055BBF8 /* square.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = square.txt; sourceTree = "<group>"; };
+		948A35A02AA5ABB70009CCFC /* DebugFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DebugFunction.cpp; sourceTree = "<group>"; };
+		948A35A42AA5AD450009CCFC /* LoadTexture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LoadTexture.cpp; sourceTree = "<group>"; };
 		94AB12A22A887DC10004D601 /* ShaderConstructor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderConstructor.h; sourceTree = "<group>"; };
 		94AB12A32A887E920004D601 /* VS.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = VS.vert; sourceTree = "<group>"; };
 		94AB12A42A887E920004D601 /* FS.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = FS.frag; sourceTree = "<group>"; };
@@ -1117,15 +1120,16 @@
 			isa = PBXGroup;
 			children = (
 				94FEA8232A87849D003C8A3D /* DebugFunction.h */,
-				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
+				948A35A02AA5ABB70009CCFC /* DebugFunction.cpp */,
 				94AB12A22A887DC10004D601 /* ShaderConstructor.h */,
-				945851322A8E2C70008E7FAB /* Camera.h */,
+				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
 				94ECD3222A938FAA00FE034E /* LoadTexture.h */,
+				948A35A42AA5AD450009CCFC /* LoadTexture.cpp */,
+				945851322A8E2C70008E7FAB /* Camera.h */,
 				94ECD3242A9390AB00FE034E /* ImguiGenerator.h */,
 				94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */,
 				94ECD32D2A9637CD00FE034E /* Model.h */,
 				94ECD32E2A9637CD00FE034E /* Model.cpp */,
-				942DE25D2AA0BB9900187F1C /* BMP.h */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -1201,9 +1205,11 @@
 				94ECD31E2A937E7300FE034E /* Material.cpp in Sources */,
 				94BAEDB42AA0D41300237B3F /* stb_image_write.cpp in Sources */,
 				94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */,
+				948A35A52AA5AD450009CCFC /* LoadTexture.cpp in Sources */,
 				94AB14602A89CB2A0004D601 /* glm.cpp in Sources */,
 				945706822A8B249600C1D597 /* imgui.cpp in Sources */,
 				94AB12B22A88CAA00004D601 /* glad.c in Sources */,
+				948A35A12AA5ABB70009CCFC /* DebugFunction.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

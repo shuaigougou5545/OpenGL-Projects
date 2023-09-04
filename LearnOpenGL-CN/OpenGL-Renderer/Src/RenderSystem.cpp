@@ -134,9 +134,9 @@ void RenderSystem::initOpenGLObjects()
 
 void RenderSystem::initTextures()
 {
-    unsigned int texture;
-    texture = loadTexture("./Textures/container2.png");
-    textures.push_back(texture);
+//    unsigned int texture;
+//    texture = loadTexture("./Textures/container2.png");
+//    textures.push_back(texture);
 }
 
 void RenderSystem::initOpenGLStatus()

@@ -21,6 +21,8 @@
 		948A35972AA5A6FA0009CCFC /* WindowSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35952AA5A6FA0009CCFC /* WindowSystem.cpp */; };
 		948A359A2AA5A7140009CCFC /* RenderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35982AA5A7130009CCFC /* RenderSystem.cpp */; };
 		948A359D2AA5A7540009CCFC /* Engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A359B2AA5A7540009CCFC /* Engine.cpp */; };
+		948A359F2AA5AB5F0009CCFC /* DebugFunction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A359E2AA5AB5F0009CCFC /* DebugFunction.cpp */; };
+		948A35A32AA5AC460009CCFC /* LoadTexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35A22AA5AC460009CCFC /* LoadTexture.cpp */; };
 		94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12AF2A88CA630004D601 /* stb_image.cpp */; };
 		94AB12B22A88CAA00004D601 /* glad.c in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12B12A88CAA00004D601 /* glad.c */; };
 		94AB14602A89CB2A0004D601 /* glm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB13A32A89CB2A0004D601 /* glm.cpp */; };
@@ -79,6 +81,8 @@
 		948A35992AA5A7130009CCFC /* RenderSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem.h; sourceTree = "<group>"; };
 		948A359B2AA5A7540009CCFC /* Engine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Engine.cpp; sourceTree = "<group>"; };
 		948A359C2AA5A7540009CCFC /* Engine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Engine.h; sourceTree = "<group>"; };
+		948A359E2AA5AB5F0009CCFC /* DebugFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DebugFunction.cpp; sourceTree = "<group>"; };
+		948A35A22AA5AC460009CCFC /* LoadTexture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LoadTexture.cpp; sourceTree = "<group>"; };
 		94AB12A22A887DC10004D601 /* ShaderConstructor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderConstructor.h; sourceTree = "<group>"; };
 		94AB12A32A887E920004D601 /* VS.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = VS.vert; sourceTree = "<group>"; };
 		94AB12A42A887E920004D601 /* FS.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = FS.frag; sourceTree = "<group>"; };
@@ -1131,10 +1135,12 @@
 			isa = PBXGroup;
 			children = (
 				94FEA8232A87849D003C8A3D /* DebugFunction.h */,
-				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
+				948A359E2AA5AB5F0009CCFC /* DebugFunction.cpp */,
 				94AB12A22A887DC10004D601 /* ShaderConstructor.h */,
+				94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */,
 				945851322A8E2C70008E7FAB /* Camera.h */,
 				94ECD3222A938FAA00FE034E /* LoadTexture.h */,
+				948A35A22AA5AC460009CCFC /* LoadTexture.cpp */,
 				94ECD3242A9390AB00FE034E /* ImguiGenerator.h */,
 				94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */,
 				94ECD32D2A9637CD00FE034E /* Model.h */,
@@ -1203,6 +1209,7 @@
 				94ECD3202A937EC400FE034E /* Light.cpp in Sources */,
 				94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */,
 				945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */,
+				948A35A32AA5AC460009CCFC /* LoadTexture.cpp in Sources */,
 				945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */,
 				948A35972AA5A6FA0009CCFC /* WindowSystem.cpp in Sources */,
 				945706872A8B249600C1D597 /* imgui_draw.cpp in Sources */,
@@ -1220,6 +1227,7 @@
 				94AB14602A89CB2A0004D601 /* glm.cpp in Sources */,
 				945706822A8B249600C1D597 /* imgui.cpp in Sources */,
 				94AB12B22A88CAA00004D601 /* glad.c in Sources */,
+				948A359F2AA5AB5F0009CCFC /* DebugFunction.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
