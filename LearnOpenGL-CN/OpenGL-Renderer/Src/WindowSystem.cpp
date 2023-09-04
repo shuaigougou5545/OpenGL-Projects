@@ -73,8 +73,8 @@ void WindowSystem::tick(float delta_time)
     processInput(window);
     glfwPollEvents();
     
-    InitImGui();
-    SetImGuiUI();
+    // draw imgui
+    DrawImguiUI();
 }
 
 void WindowSystem::framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -101,13 +101,10 @@ void WindowSystem::processInput(GLFWwindow *window)
     }
 }
 
-void WindowSystem::InitImGui()
+void WindowSystem::DrawImguiUI()
 {
     ig->InitWindow();
-}
-
-void WindowSystem::SetImGuiUI()
-{
+    
     ImGui::Begin("OpenGL");
     
     int window_width = 0, window_height = 0;
@@ -121,6 +118,8 @@ void WindowSystem::SetImGuiUI()
     
     ImGui::End();
     ImGui::Render();
+    
+    ig->DrawWindow();
 }
 
 void WindowSystem::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

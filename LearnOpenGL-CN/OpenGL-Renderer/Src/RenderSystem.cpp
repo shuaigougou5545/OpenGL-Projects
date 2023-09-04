@@ -78,8 +78,6 @@ void RenderSystem::tick(float delta_time)
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
 //    glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
-
-    glfwSwapBuffers(window);
 }
 
 void RenderSystem::shutdown()

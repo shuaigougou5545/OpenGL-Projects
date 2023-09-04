@@ -1293,6 +1293,10 @@ ImGui提供一个已经创建好的demo-window，我们可以通过这一个函�
 
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308151247073.png" alt="截屏2023-08-15 12.47.03" style="zoom:50%;" />
 
+#### （4）Imgui常见问题
+
+- 如果Imgui窗口没有正确显示，请查看主循环中每帧的`glClear`函数，是否在Imgui之后渲染，如果是，则窗口的显示会被glClear所覆盖
+
 ## C3 GLSL常见问题
 
 ### 1.uniform location

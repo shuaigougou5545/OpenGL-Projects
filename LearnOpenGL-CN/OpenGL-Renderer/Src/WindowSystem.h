@@ -48,8 +48,7 @@ public:
     
     void processInput(GLFWwindow *window);
     
-    void InitImGui();
-    void SetImGuiUI();
+    void DrawImguiUI();
     
 private:
     // glfw window callback function

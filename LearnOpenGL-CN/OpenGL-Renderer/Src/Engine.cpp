@@ -34,8 +34,10 @@ void Engine::run()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
         
-        window_sys->tick(deltaTime);
         render_sys->tick(deltaTime);
+        window_sys->tick(deltaTime);
+        
+        glfwSwapBuffers(window);
     }
 }
 
