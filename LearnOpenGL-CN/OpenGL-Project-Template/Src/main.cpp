@@ -192,13 +192,13 @@ int main()
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
-        bool render_to_pic = false;
-        render_to_pic = ImGui::Button("Render to Picture");
-        if(render_to_pic){
-            unsigned char* image_data;
-            glReadPixels(0, 0, SCR_WIDTH, SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image_data);
-            stbi_write_png("./output.png", SCR_WIDTH, SCR_HEIGHT, 3, image_data, 0);
-        }
+//        bool render_to_pic = false;
+//        render_to_pic = ImGui::Button("Render to Picture");
+//        if(render_to_pic){
+//            unsigned char* image_data;
+//            glReadPixels(0, 0, SCR_WIDTH, SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image_data);
+//            stbi_write_png("./output.png", SCR_WIDTH, SCR_HEIGHT, 3, image_data, 0);
+//        }
         
         ImGui::End();
         ImGui::Render();
