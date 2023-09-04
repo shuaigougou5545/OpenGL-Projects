@@ -20,7 +20,12 @@
 #include "WindowSystem.h"
 
 
-namespace rd {
+struct MVP{
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
+};
+
 
 class RenderSystem{
 public:
@@ -28,7 +33,7 @@ public:
     ~RenderSystem() = default;
     
     void initialize();
-    void run();
+    void tick(float delta_time);
     void shutdown();
     
     void initModels();
@@ -46,6 +51,5 @@ private:
     WindowSystem* window_sys;
 };
 
-}
 
 #endif /* RenderSystem_h */

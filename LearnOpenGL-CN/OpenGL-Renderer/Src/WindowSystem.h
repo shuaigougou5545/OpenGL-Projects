@@ -13,13 +13,12 @@
 #include <memory>
 
 
-namespace rd {
-
 struct WindowInfo
 {
     int width = 800;
     int height = 600;
     const char* title = "OpenGL";
+    Camera camera = Camera(glm::vec3(0.0f, 5.0f, 20.0f));
 };
 
 class WindowSystem{
@@ -28,7 +27,7 @@ public:
     ~WindowSystem();
     
     void initialize(WindowInfo info);
-    void run();
+    void tick(float delta_time);
     void shutdown();
     
     // property
@@ -69,6 +68,5 @@ public:
     void getWindowSize(int& width, int& height);
 };
 
-}
 
 #endif /* WindowSystem_h */

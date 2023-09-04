@@ -4,7 +4,7 @@
 
 int main()
 {
-    std::shared_ptr<rd::Engine> engine = std::make_shared<rd::Engine>();
+    std::shared_ptr<Engine> engine = std::make_shared<Engine>();
     
     engine->startEngine();
     engine->run();

@@ -1,8 +1,6 @@
 #include "WindowSystem.h"
 
 
-namespace rd {
-
 WindowSystem::WindowSystem()
 {
     
@@ -25,10 +23,11 @@ void WindowSystem::initialize(WindowInfo info)
     
     m_width = info.width;
     m_height = info.height;
+    camera = info.camera;
     lastX = m_width / 2.0f;
     lastY = m_height / 2.0f;
     
-    GLFWwindow* window = glfwCreateWindow(m_width, m_height, info.title, NULL, NULL);
+    window = glfwCreateWindow(m_width, m_height, info.title, NULL, NULL);
     if(!window)
     {
         glfwTerminate();
@@ -51,8 +50,8 @@ void WindowSystem::initialize(WindowInfo info)
     }
     
     // imgui
-//    ig = std::make_shared<ImguiGenerator>(window);
-//    ig->Init();
+    ig = std::make_shared<ImguiGenerator>(window);
+    ig->Init();
 }
 
 void WindowSystem::shutdown()
@@ -65,19 +64,17 @@ void WindowSystem::shutdown()
     glfwTerminate();
 }
 
-void WindowSystem::run()
+void WindowSystem::tick(float delta_time)
 {
-    while(!glfwWindowShouldClose(window)){
-        float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-        
-        processInput(window);
-        glfwPollEvents();
-        
-        InitImGui();
-        SetImGuiUI();
-    }
+    float currentFrame = static_cast<float>(glfwGetTime());
+    deltaTime = delta_time;
+    lastFrame = currentFrame;
+    
+    processInput(window);
+    glfwPollEvents();
+    
+    InitImGui();
+    SetImGuiUI();
 }
 
 void WindowSystem::framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -195,4 +192,3 @@ void WindowSystem::getWindowSize(int& width, int& height)
     height = m_height;
 }
 
-}
