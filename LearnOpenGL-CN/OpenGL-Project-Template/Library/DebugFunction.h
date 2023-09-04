@@ -5,15 +5,7 @@
 #include <iostream>
 
 
-GLenum glCheckError_(const char *file, int line)
-{
-    GLenum errorCode;
-    while ((errorCode = glGetError()) != GL_NO_ERROR)
-    {
-        std::cout << errorCode << " | " << file << " (" << line << ")" << std::endl;
-    }
-    return errorCode;
-}
+GLenum glCheckError_(const char *file, int line);
 #define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 #endif /* DebugFunction_h */
