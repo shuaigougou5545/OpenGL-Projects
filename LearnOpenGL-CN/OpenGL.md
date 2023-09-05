@@ -1384,48 +1384,21 @@ shader中uniform变量如果没有用到，则会被优化删除掉，所以会�
 
 ## C4  OpenGL导出图片
 
-#### 1.bmp
+#### 1.FreeImage库
 
-> 参考文章：https://zhuanlan.zhihu.com/p/508507043?utm_id=0
->
-> https://blog.csdn.net/u013412391/article/details/120565095
+FreeImage支持多种图像格式，且支持跨平台
 
-需要使用`glReadPixels()`函数，这个函数用于读取已经绘制好的像素信息，并将显存中数据读取到内存中
+`brew install freeimage`；或者直接下载网上已编译好的源码，加入libfreeimage.a，并将FreeImage.h
 
-```cpp
-void glReadPixels（GLint x, 
-		   GLint y,           → 左下角坐标
-		   GLsizei width,
-		   GLsizei height,    → 前四个参数描述了一个矩形范围 Rect2()
-	     GLenum format,     → 像素存储的格式
-		   GLenum type,       → 像素数据的数据类型
-	     GLvoid * data）;   →返回像素数据
-```
+> 参考网站：https://www.codetd.com/article/15766591
 
-使用方法：
+具体步骤：
 
-```cpp
-// step 1: 申请内存,存放像素数据
-RGBColor* ColorBuffer = new RGBColor[WindowSizeX * WindowSizeY];
-// step 2: 从显存中读取像素
-glReadPixels(0, 0, WindowSizeX, WindowSizeY, GL_BGR, GL_UNSIGNED_BYTE, ColorBuffer);
-// step 3: 将数据写入目标图片文件
-WriteBMP("output.bmp", ColorBuffer, WindowSizeX, WindowSizeY);
-// step 4: 释放申请的内存
-delete[] ColorBuffer;
-```
+- 将FreeImage根目录下的libfreeimage.a加入到Xcode中（参考其他.a文件的加入）
+- 然后我们需要设置`Library Search Path`，设置我们加入的.a文件的目录 => `$(SRCROOT)/../../3rd_party/FreeImage`
+- 最后我们将`FreeImage/Source/FreeImage.h`加入到Xcode工程中
 
-这里WriteBMP函数需要我们自己去实现，BMP文件格式相当简单明了，很容易自己创建，这里在网上抄了一段（懒得自己写了）
-
-TODO：这个博客写的好像不对，输出的bmp图片打不开
-
-#### 2.stb_image库
-
-本身stb_image库就是用来处理图像的，我们之前用它来解析纹理图片，现在我们研究它的导出图片功能
-
-chatgpt推荐我们使用这个作者的另一个库，叫做`stb_image_write`，专门用于将数据写入文件
-
-
+##### 使用方法：
 
 ## Q1 多线程
 

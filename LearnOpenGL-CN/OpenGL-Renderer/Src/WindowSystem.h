@@ -25,6 +25,9 @@ class WindowSystem{
 public:
     WindowSystem();
     ~WindowSystem();
+
+    GLFWwindow* getWindow();
+    void getWindowSize(int& width, int& height);
     
     void initialize(WindowInfo info);
     void tick(float delta_time);
@@ -47,7 +50,6 @@ public:
     bool render_to_pic = false;
     
     void processInput(GLFWwindow *window);
-    
     void DrawImguiUI();
     
 private:
@@ -62,9 +64,7 @@ private:
     std::shared_ptr<ImguiGenerator> ig;
     int m_width = 0, m_height = 0;
     
-public:
-    GLFWwindow* getWindow();
-    void getWindowSize(int& width, int& height);
+//    void renderToPicture()
 };
 
 
