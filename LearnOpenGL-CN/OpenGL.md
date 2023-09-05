@@ -1384,13 +1384,13 @@ shader中uniform变量如果没有用到，则会被优化删除掉，所以会�
 
 ## C4  OpenGL导出图片
 
-#### 1.FreeImage库
+#### 1.FreeImage库（❓）
 
 FreeImage支持多种图像格式，且支持跨平台
 
 `brew install freeimage`；或者直接下载网上已编译好的源码，加入libfreeimage.a，并将FreeImage.h
 
-> 参考网站：https://www.codetd.com/article/15766591
+> 参考网站：https://www.codetd.com/article/15766591 => 这个网站已经过时了，得自行编译FreeImage
 
 具体步骤：
 
@@ -1399,6 +1399,24 @@ FreeImage支持多种图像格式，且支持跨平台
 - 最后我们将`FreeImage/Source/FreeImage.h`加入到Xcode工程中
 
 ##### 使用方法：
+
+```cpp
+glBindFramebuffer(GL_FRAMEBUFFER, 0); // 切换回默认帧缓冲
+unsigned char* data = (unsigned char*)malloc(3 * width * height);
+glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+// 将数据保存为图片，可以使用第三方库，比如stb_image或者FreeImage
+// 保存为PNG图片示例（需要FreeImage库）：
+FIBITMAP* image = FreeImage_ConvertFromRawBits(data, width, height, 3 * width, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
+FreeImage_Save(FIF_PNG, image, "output.png", 0);
+FreeImage_Unload(image);
+
+free(data); // 释放内存
+```
+
+#### 2.stb_image库
+
+或者就用我们之前加载纹理时的库，这里要去下载`stb_image_write`库，和stb_image使用原理类似
 
 ## Q1 多线程
 

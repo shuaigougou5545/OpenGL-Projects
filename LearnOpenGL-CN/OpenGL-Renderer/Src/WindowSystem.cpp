@@ -1,4 +1,7 @@
 #include "WindowSystem.h"
+#include "stb_image_write.h"
+#include <string>
+#include <cstdlib>
 
 
 WindowSystem::WindowSystem()
@@ -115,6 +118,10 @@ void WindowSystem::DrawImguiUI()
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig->io->Framerate, ig->io->Framerate);
     
     render_to_pic = ImGui::Button("Render to Picture");
+    if(render_to_pic)
+    {
+        renderToPicture("./output.bmp");
+    }
     
     ImGui::End();
     ImGui::Render();
@@ -191,3 +198,41 @@ void WindowSystem::getWindowSize(int& width, int& height)
     height = m_height;
 }
 
+void WindowSystem::renderToPicture(const char* file_name, GLint fbo)
+{
+    // PS: 每次循环中,窗口处理在渲染处理之后,所以这里能获取到当前帧的渲染数据
+    // 输出fbo帧缓冲,fbo默认值为0,也就是默认帧缓冲
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    
+    int channels = 4;
+    unsigned char* data = (unsigned char*)malloc(channels * m_width * m_height);
+    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    // 上下翻转
+    unsigned char* flipped_data = (unsigned char*)malloc(channels * m_width * m_height);
+    for (int y = 0; y < m_height; y++) {
+        memcpy(flipped_data + (m_height - 1 - y) * channels * m_width, data + y * channels * m_width, channels * m_width);
+    }
+    
+    enum Type { bmp };
+    Type type = bmp;
+    switch (type) {
+        case bmp:
+            // bmp与OpenGL坐标系不同,bmp原点在左上角,opengl在左下角,需要对图像数据进行翻转
+            stbi_write_bmp(file_name, m_width, m_height, channels, flipped_data);
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+#ifdef __APPLE__
+    // 在Mac系统下打开文件
+    std::string command = "open " + std::string(file_name);
+    int result = system(command.c_str());
+#endif
+    
+    free(data);
+    free(flipped_data);
+}

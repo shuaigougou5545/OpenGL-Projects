@@ -64,7 +64,7 @@ private:
     std::shared_ptr<ImguiGenerator> ig;
     int m_width = 0, m_height = 0;
     
-//    void renderToPicture()
+    void renderToPicture(const char* file_name, GLint fbo = 0);
 };
 
 
