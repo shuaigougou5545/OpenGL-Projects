@@ -1418,6 +1418,47 @@ free(data); // 释放内存
 
 或者就用我们之前加载纹理时的库，这里要去下载`stb_image_write`库，和stb_image使用原理类似
 
+```cpp
+void WindowSystem::renderToPicture(const char* file_name, GLint fbo)
+{
+    // PS: 每次循环中,窗口处理在渲染处理之后,所以这里能获取到当前帧的渲染数据
+    // 输出fbo帧缓冲,fbo默认值为0,也就是默认帧缓冲
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    
+    int channels = 4;
+    unsigned char* data = (unsigned char*)malloc(channels * m_width * m_height);
+    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+    // 上下翻转
+    unsigned char* flipped_data = (unsigned char*)malloc(channels * m_width * m_height);
+    for (int y = 0; y < m_height; y++) {
+        memcpy(flipped_data + (m_height - 1 - y) * channels * m_width, data + y * channels * m_width, channels * m_width);
+    }
+    
+    enum Type { bmp };
+    Type type = bmp;
+    switch (type) {
+        case bmp:
+            // bmp与OpenGL坐标系不同,bmp原点在左上角,opengl在左下角,需要对图像数据进行翻转
+            stbi_write_bmp(file_name, m_width, m_height, channels, flipped_data);
+            break;
+            
+        default:
+            break;
+    }
+    
+    
+#ifdef __APPLE__
+    // 在Mac OS下打开文件
+    std::string command = "open " + std::string(file_name);
+    int result = system(command.c_str());
+#endif
+    
+    free(data);
+    free(flipped_data);
+}
+```
+
 ## Q1 多线程
 
 #### （1）渲染&窗口处理
@@ -1427,6 +1468,14 @@ free(data); // 释放内存
 解决方法：将窗口事件处理和渲染分离到不同的线程中 -- 比如，创建一个线程专门用于渲染，窗口事件就放在主线程中【要求：UI事件（GLFW窗口事件）必须放在主线程中】
 
 TODO：将窗口事件处理和渲染分离到不同的线程中
+
+## Q2 视网膜显示器 - MacOS
+
+对于视网膜显示器，像素密度通常更高。我们一般需要：
+
+- 提高帧缓冲区的分辨率
+  - 一般将帧缓冲的分辨率设置为实际物理屏幕分辨率的两倍，以匹配高分辨率屏幕的像素密度
+- 
 
 ## M1 常见问题
 

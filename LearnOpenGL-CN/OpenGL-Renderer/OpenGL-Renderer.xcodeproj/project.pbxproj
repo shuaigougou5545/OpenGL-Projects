@@ -27,6 +27,7 @@
 		94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12AF2A88CA630004D601 /* stb_image.cpp */; };
 		94AB12B22A88CAA00004D601 /* glad.c in Sources */ = {isa = PBXBuildFile; fileRef = 94AB12B12A88CAA00004D601 /* glad.c */; };
 		94AB14602A89CB2A0004D601 /* glm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AB13A32A89CB2A0004D601 /* glm.cpp */; };
+		94B5A9F82AA8945B001FF102 /* FileParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94B5A9F72AA8945B001FF102 /* FileParser.cpp */; };
 		94BAEDB42AA0D41300237B3F /* stb_image_write.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94BAEDB32AA0D41300237B3F /* stb_image_write.cpp */; };
 		94ECD31E2A937E7300FE034E /* Material.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31D2A937E7300FE034E /* Material.cpp */; };
 		94ECD3202A937EC400FE034E /* Light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94ECD31F2A937EC400FE034E /* Light.cpp */; };
@@ -515,6 +516,8 @@
 		94AB145D2A89CB2A0004D601 /* rotate_normalized_axis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = rotate_normalized_axis.hpp; sourceTree = "<group>"; };
 		94AB145E2A89CB2A0004D601 /* projection.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = projection.inl; sourceTree = "<group>"; };
 		94AB145F2A89CB2A0004D601 /* type_aligned.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = type_aligned.hpp; sourceTree = "<group>"; };
+		94B5A9F62AA8945B001FF102 /* FileParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileParser.h; sourceTree = "<group>"; };
+		94B5A9F72AA8945B001FF102 /* FileParser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FileParser.cpp; sourceTree = "<group>"; };
 		94BAEDB32AA0D41300237B3F /* stb_image_write.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = stb_image_write.cpp; sourceTree = "<group>"; };
 		94ECD31B2A93736900FE034E /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Material.h; sourceTree = "<group>"; };
 		94ECD31C2A9373AB00FE034E /* Light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Light.h; sourceTree = "<group>"; };
@@ -1160,6 +1163,8 @@
 				94ECD3252A9391A000FE034E /* ImguiGenerator.cpp */,
 				94ECD32D2A9637CD00FE034E /* Model.h */,
 				94ECD32E2A9637CD00FE034E /* Model.cpp */,
+				94B5A9F62AA8945B001FF102 /* FileParser.h */,
+				94B5A9F72AA8945B001FF102 /* FileParser.cpp */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -1225,6 +1230,7 @@
 				94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */,
 				945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */,
 				948A35A32AA5AC460009CCFC /* LoadTexture.cpp in Sources */,
+				94B5A9F82AA8945B001FF102 /* FileParser.cpp in Sources */,
 				945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */,
 				948A35972AA5A6FA0009CCFC /* WindowSystem.cpp in Sources */,
 				945706872A8B249600C1D597 /* imgui_draw.cpp in Sources */,

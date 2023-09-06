@@ -2,6 +2,8 @@
 #include "stb_image_write.h"
 #include <string>
 #include <cstdlib>
+#include "DebugFunction.h"
+#include "FileParser.h"
 
 
 WindowSystem::WindowSystem()
@@ -82,6 +84,10 @@ void WindowSystem::tick(float delta_time)
 
 void WindowSystem::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+#ifdef __APPLE__
+    width *= 2;
+    height *= 2;
+#endif
     glViewport(0, 0, width, height);
 }
 
@@ -120,7 +126,7 @@ void WindowSystem::DrawImguiUI()
     render_to_pic = ImGui::Button("Render to Picture");
     if(render_to_pic)
     {
-        renderToPicture("./output.bmp");
+        renderToPicture("./output.jpg");
     }
     
     ImGui::End();
@@ -205,32 +211,40 @@ void WindowSystem::renderToPicture(const char* file_name, GLint fbo)
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     
     int channels = 4;
-    unsigned char* data = (unsigned char*)malloc(channels * m_width * m_height);
-    glReadPixels(0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    GLenum format = GL_RGBA;
+    int output_width = m_width, output_height = m_height;
+    
+#ifdef __APPLE__
+    // 视网膜显示器特殊处理
+    output_width *= 2;
+    output_height *= 2;
+#endif
+    
+    unsigned char* data = (unsigned char*)malloc(channels * output_width * output_height);
+    glReadPixels(0, 0, output_width, output_height, format, GL_UNSIGNED_BYTE, data);
 
     // 上下翻转
-    unsigned char* flipped_data = (unsigned char*)malloc(channels * m_width * m_height);
-    for (int y = 0; y < m_height; y++) {
-        memcpy(flipped_data + (m_height - 1 - y) * channels * m_width, data + y * channels * m_width, channels * m_width);
+    unsigned char* flipped_data = (unsigned char*)malloc(channels * output_width * output_height);
+    for (int y = 0; y < output_height; y++) {
+        memcpy(flipped_data + (output_height - 1 - y) * channels * output_width, data + y * channels * output_width, channels * output_width);
     }
     
-    enum Type { bmp };
-    Type type = bmp;
-    switch (type) {
-        case bmp:
-            // bmp与OpenGL坐标系不同,bmp原点在左上角,opengl在左下角,需要对图像数据进行翻转
-            stbi_write_bmp(file_name, m_width, m_height, channels, flipped_data);
-            break;
-            
-        default:
-            break;
+    FileParser fp;
+    std::string extension = fp.getExtension(file_name);
+    
+    if(extension == "bmp"){
+        // bmp与OpenGL坐标系不同,bmp原点在左上角,opengl在左下角,需要对图像数据进行翻转
+        stbi_write_bmp(file_name, output_width, output_height, channels, flipped_data);
+    }else if(extension == "jpg"){
+        // 最后一个参数:(1~100),数字越大质量越高
+        stbi_write_jpg(file_name, output_width, output_height, channels, flipped_data, 100);
     }
     
     
 #ifdef __APPLE__
-    // 在Mac系统下打开文件
+    // 在Mac OS下打开文件
     std::string command = "open " + std::string(file_name);
-    int result = system(command.c_str());
+    int result = system(command.c_str()); (void)result;
 #endif
     
     free(data);
