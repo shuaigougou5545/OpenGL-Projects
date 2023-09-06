@@ -1,4 +1,5 @@
 #include "RenderSystem.h"
+#include "PostProcess.h"
 
 
 void RenderSystem::initialize()
@@ -6,18 +7,35 @@ void RenderSystem::initialize()
     initModels();
     initOpenGLObjects();
     initTextures();
-    initOpenGLStatus();
     initShaders();
 }
 
 void RenderSystem::tick(float delta_time)
 {
+    auto window = window_sys->getWindow();
+    glfwGetWindowSize(window, &window_width, &window_height);
+    
+    viewport_width = window_width;
+    viewport_height = window_height;
+    
+#ifdef __APPLE__
+    viewport_width *= 2;
+    viewport_height *= 2;
+#endif
+    
+    PostProcess pp(viewport_width, viewport_height);
+    pp.BindFBO();
+    
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    
     auto sc = shader_constructors[0];
     sc.use();
     sc.setInt("gMat.DiffuseTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
 
-    auto window = window_sys->getWindow();
+    
     glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
@@ -25,15 +43,12 @@ void RenderSystem::tick(float delta_time)
 
     auto& camera = window_sys->camera;
 
-    int window_width, window_height;
-    glfwGetWindowSize(window, &window_width, &window_height);
-
     //
     // Shared: Uniform
     //
     MVP mvp;
     mvp.view = camera.GetViewMatrix();
-    mvp.projection = glm::perspective(glm::radians(camera.Zoom), (float)window_width / window_height, 0.1f, 100.f);
+    mvp.projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
     sc.setMat4("view", glm::value_ptr(mvp.view));
     sc.setMat4("projection", glm::value_ptr(mvp.projection));
 
@@ -78,6 +93,8 @@ void RenderSystem::tick(float delta_time)
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
 //    glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
+    
+    pp.RenderToTexture();
 }
 
 void RenderSystem::shutdown()
@@ -129,13 +146,6 @@ void RenderSystem::initTextures()
     unsigned int texture;
     texture = loadTexture("./Textures/container2.png");
     textures.push_back(texture);
-}
-
-void RenderSystem::initOpenGLStatus()
-{
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
 }
 
 void RenderSystem::initShaders()

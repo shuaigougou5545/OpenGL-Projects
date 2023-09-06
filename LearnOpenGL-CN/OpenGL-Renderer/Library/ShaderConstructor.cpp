@@ -78,12 +78,17 @@ ShaderConstructor::ShaderConstructor(const std::string vsPath, const std::string
     glDeleteShader(FS);
 }
 
+ShaderConstructor::~ShaderConstructor()
+{
+
+}
+
 void ShaderConstructor::use()
 {
     glUseProgram(ID);
 }
 
-void ShaderConstructor::destory()
+void ShaderConstructor::destroy()
 {
     glDeleteProgram(ID);
 }

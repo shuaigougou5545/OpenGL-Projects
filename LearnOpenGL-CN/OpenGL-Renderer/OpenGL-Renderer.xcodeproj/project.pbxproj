@@ -518,6 +518,8 @@
 		94AB145F2A89CB2A0004D601 /* type_aligned.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = type_aligned.hpp; sourceTree = "<group>"; };
 		94B5A9F62AA8945B001FF102 /* FileParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileParser.h; sourceTree = "<group>"; };
 		94B5A9F72AA8945B001FF102 /* FileParser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FileParser.cpp; sourceTree = "<group>"; };
+		94B5A9F92AA8A324001FF102 /* PostProcess_fs.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = PostProcess_fs.frag; sourceTree = "<group>"; };
+		94B5A9FA2AA8A324001FF102 /* PostProcess_vs.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = PostProcess_vs.vert; sourceTree = "<group>"; };
 		94BAEDB32AA0D41300237B3F /* stb_image_write.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = stb_image_write.cpp; sourceTree = "<group>"; };
 		94ECD31B2A93736900FE034E /* Material.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Material.h; sourceTree = "<group>"; };
 		94ECD31C2A9373AB00FE034E /* Light.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Light.h; sourceTree = "<group>"; };
@@ -577,16 +579,16 @@
 		941FD60B2A8649B200C932DD /* Src */ = {
 			isa = PBXGroup;
 			children = (
-				948A359B2AA5A7540009CCFC /* Engine.cpp */,
 				948A359C2AA5A7540009CCFC /* Engine.h */,
-				948A35982AA5A7130009CCFC /* RenderSystem.cpp */,
+				948A359B2AA5A7540009CCFC /* Engine.cpp */,
 				948A35992AA5A7130009CCFC /* RenderSystem.h */,
-				948A35952AA5A6FA0009CCFC /* WindowSystem.cpp */,
+				948A35982AA5A7130009CCFC /* RenderSystem.cpp */,
 				948A35962AA5A6FA0009CCFC /* WindowSystem.h */,
+				948A35952AA5A6FA0009CCFC /* WindowSystem.cpp */,
 				941FD60C2A8649B200C932DD /* main.cpp */,
 				94ECD31B2A93736900FE034E /* Material.h */,
-				94ECD31C2A9373AB00FE034E /* Light.h */,
 				94ECD31D2A937E7300FE034E /* Material.cpp */,
+				94ECD31C2A9373AB00FE034E /* Light.h */,
 				94ECD31F2A937EC400FE034E /* Light.cpp */,
 			);
 			path = Src;
@@ -606,6 +608,8 @@
 		941FD6282A864F1B00C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				94B5A9F92AA8A324001FF102 /* PostProcess_fs.frag */,
+				94B5A9FA2AA8A324001FF102 /* PostProcess_vs.vert */,
 				94AB12A42A887E920004D601 /* FS.frag */,
 				94AB12A32A887E920004D601 /* VS.vert */,
 			);

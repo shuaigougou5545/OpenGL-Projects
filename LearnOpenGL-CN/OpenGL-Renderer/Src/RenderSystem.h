@@ -39,7 +39,6 @@ public:
     void initModels();
     void initOpenGLObjects();
     void initTextures();
-    void initOpenGLStatus();
     void initShaders();
 private:
     std::vector<Model> models;
@@ -49,6 +48,8 @@ private:
     std::vector<GLuint> textures;
     std::vector<ShaderConstructor> shader_constructors;
     WindowSystem* window_sys;
+    int window_width, window_height;
+    int viewport_width, viewport_height;
 };
 
 
