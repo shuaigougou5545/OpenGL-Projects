@@ -7,17 +7,16 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
+#include <memory>
 
 #include "DebugFunction.h"
 #include "LoadTexture.h"
-
 #include "ShaderConstructor.h"
-
 #include "Model.h"
 #include "Light.h"
 #include "Material.h"
-
 #include "WindowSystem.h"
+#include "PostProcess.h"
 
 
 struct MVP{
@@ -40,6 +39,7 @@ public:
     void initOpenGLObjects();
     void initTextures();
     void initShaders();
+    void initLogic();
 private:
     std::vector<Model> models;
     std::vector<GLuint> VBOs;
@@ -48,8 +48,10 @@ private:
     std::vector<GLuint> textures;
     std::vector<ShaderConstructor> shader_constructors;
     WindowSystem* window_sys;
-    int window_width, window_height;
-    int viewport_width, viewport_height;
+    int window_width = 800, window_height = 600;
+    int viewport_width = 1600, viewport_height = 1200;
+    
+    std::shared_ptr<PostProcess> postprocess_ptr;
 };
 
 

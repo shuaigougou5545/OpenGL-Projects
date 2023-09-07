@@ -1,5 +1,4 @@
 #include "RenderSystem.h"
-#include "PostProcess.h"
 
 
 void RenderSystem::initialize()
@@ -8,6 +7,7 @@ void RenderSystem::initialize()
     initOpenGLObjects();
     initTextures();
     initShaders();
+    initLogic();
 }
 
 void RenderSystem::tick(float delta_time)
@@ -23,8 +23,7 @@ void RenderSystem::tick(float delta_time)
     viewport_height *= 2;
 #endif
     
-    PostProcess pp(viewport_width, viewport_height);
-    pp.BindFBO();
+    postprocess_ptr->BindFBO();
     
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -92,9 +91,8 @@ void RenderSystem::tick(float delta_time)
 
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
-//    glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
     
-    pp.RenderToTexture();
+    postprocess_ptr->RenderToTexture();
 }
 
 void RenderSystem::shutdown()
@@ -152,4 +150,9 @@ void RenderSystem::initShaders()
 {
     ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
     shader_constructors.push_back(sc);
+}
+
+void RenderSystem::initLogic()
+{
+    postprocess_ptr = std::make_shared<PostProcess>(viewport_width, viewport_height);
 }

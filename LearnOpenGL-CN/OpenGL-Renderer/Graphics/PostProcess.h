@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "ShaderConstructor.h"
 
@@ -16,6 +17,7 @@ public:
     
     void BindFBO();
     void RenderToTexture();
+    void Destroy();
     
     GLuint fbo;
     GLuint texture;
@@ -23,26 +25,23 @@ public:
     
     GLuint quadVAO;
     GLuint quadVBO;
-    GLuint quadEBO;
     
-    std::vector<ShaderConstructor> scLists;
+    std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
     
 private:
     void CreateOpenGLObjects();
     void CreateShader();
-    void DrawQuad();
+    void DrawScreenQuad();
     
     int m_width, m_height;
     std::vector<float> quad_vertices = {
-    //  --- pos ---  --- uv ---
-        1.0f, -1.0f, 1.0f, 0.0f,
-        1.0f,  1.0f, 1.0f, 1.0f,
-       -1.0f,  1.0f, 0.0f, 1.0f,
-       -1.0f, -1.0f, 0.0f, 0.0f,
-    };
-    std::vector<unsigned int> quad_indices = {
-        0, 1, 2,
-        1, 2, 3,
+    //  --- pos ---
+        -1.0f, -1.0f,
+         1.0f, -1.0f,
+         1.0f,  1.0f,
+        -1.0f, -1.0f,
+         1.0f,  1.0f,
+        -1.0f,  1.0f,
     };
 };
 

@@ -101,8 +101,6 @@ void ShaderConstructor::setBool(const std::string &name, bool value, GLint Locat
 void ShaderConstructor::setInt(const std::string &name, int value, GLint LocationOffset) const
 {
     GLint location = getLocation(name);
-    if(location == -1)
-        
     glUniform1i(location + LocationOffset, value);
 }
 
