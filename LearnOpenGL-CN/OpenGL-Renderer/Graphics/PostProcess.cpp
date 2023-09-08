@@ -2,10 +2,9 @@
 #include "DebugFunction.h"
 
 
-PostProcess::PostProcess(int width, int height) : m_width(width), m_height(height)
+PostProcess::PostProcess(int width, int height, PostProcessInfo info) : m_width(width), m_height(height), m_info(info)
 {
     CreateOpenGLObjects();
-    CreateShader();
 }
 
 PostProcess::~PostProcess()
@@ -24,6 +23,8 @@ void PostProcess::CreateOpenGLObjects()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
     glGenRenderbuffers(1, &rbo);
@@ -53,7 +54,13 @@ void PostProcess::CreateOpenGLObjects()
 
 void PostProcess::CreateShader()
 {
-    shader_constructor_ptr = std::make_shared<ShaderConstructor>("./Shaders/PostProcess_vs.vert", "./Shaders/PostProcess_fs.frag");
+    std::string vsMacroString = "";
+    std::string fsMacroString = "";
+    
+    if(m_info.isUseGaussianBlur)
+        fsMacroString += "#define GAUSSIAN_BLUR\n";
+    
+    shader_constructor_ptr = std::make_shared<ShaderConstructor>("./Shaders/PostProcess_vs.vert", "./Shaders/PostProcess_fs.frag", vsMacroString, fsMacroString);
 }
 
 void PostProcess::BindFBO()
@@ -63,21 +70,33 @@ void PostProcess::BindFBO()
 
 void PostProcess::RenderToTexture()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    CreateShader();
     shader_constructor_ptr->use();
-    shader_constructor_ptr->setInt("screenTexture", 0);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
     
-    glDisable(GL_DEPTH_TEST);
-    glClearColor(1.f, 1.f, 1.f, 1.f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    if(m_info.isUseGaussianBlur)
+        GaussianBlur();
+    
     DrawScreenQuad();
+}
+
+void PostProcess::GaussianBlur()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    shader_constructor_ptr->setInt("source", 0);
+    glm::vec2 pixel_size = glm::vec2(1.0f/m_width, 1.0f/m_height);
+    shader_constructor_ptr->setVec2("pixel_size", glm::value_ptr(pixel_size));
+    float blur_size = 5.0f;
+    shader_constructor_ptr->setFloat("blur_size", blur_size);
 }
 
 void PostProcess::DrawScreenQuad()
 {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(1.f, 1.f, 1.f, 1.f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
@@ -85,7 +104,6 @@ void PostProcess::DrawScreenQuad()
 
 void PostProcess::Destroy()
 {
-    shader_constructor_ptr->destroy();
     glDeleteFramebuffers(1, &fbo);
     glDeleteTextures(1, &texture);
     glDeleteRenderbuffers(1, &rbo);

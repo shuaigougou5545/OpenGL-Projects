@@ -1,7 +1,7 @@
 #include "ShaderConstructor.h"
 
 
-ShaderConstructor::ShaderConstructor(const std::string vsPath, const std::string fsPath, const std::string vsMacroString, const std::string fsMacroString)
+ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString, const std::string fsMacroString) : vsPath(vs_path), fsPath(fs_path)
 {
     std::string vsString, fsString;
     std::ifstream vsFile, fsFile;
@@ -25,9 +25,9 @@ ShaderConstructor::ShaderConstructor(const std::string vsPath, const std::string
     // insert macro definition - ps:glsl的第一行必须是#version...,所以宏只能放在version之后
     size_t pos;
     if((pos = vsString.find('\n')) != std::string::npos)
-        vsString.insert(pos, vsMacroString);
+        vsString.insert(pos + 1, vsMacroString);
     if((pos = fsString.find('\n')) != std::string::npos)
-        fsString.insert(pos, fsMacroString);
+        fsString.insert(pos + 1, fsMacroString);
     
     const char* vsCode = vsString.c_str();
     const char* fsCode = fsString.c_str();
@@ -80,17 +80,12 @@ ShaderConstructor::ShaderConstructor(const std::string vsPath, const std::string
 
 ShaderConstructor::~ShaderConstructor()
 {
-
+    glDeleteProgram(ID);
 }
 
 void ShaderConstructor::use()
 {
     glUseProgram(ID);
-}
-
-void ShaderConstructor::destroy()
-{
-    glDeleteProgram(ID);
 }
 
 void ShaderConstructor::setBool(const std::string &name, bool value, GLint LocationOffset) const

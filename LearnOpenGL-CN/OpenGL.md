@@ -1384,37 +1384,7 @@ shader中uniform变量如果没有用到，则会被优化删除掉，所以会�
 
 ## C4  OpenGL导出图片
 
-#### 1.FreeImage库（❓）
-
-FreeImage支持多种图像格式，且支持跨平台
-
-`brew install freeimage`；或者直接下载网上已编译好的源码，加入libfreeimage.a，并将FreeImage.h
-
-> 参考网站：https://www.codetd.com/article/15766591 => 这个网站已经过时了，得自行编译FreeImage
-
-具体步骤：
-
-- 将FreeImage根目录下的libfreeimage.a加入到Xcode中（参考其他.a文件的加入）
-- 然后我们需要设置`Library Search Path`，设置我们加入的.a文件的目录 => `$(SRCROOT)/../../3rd_party/FreeImage`
-- 最后我们将`FreeImage/Source/FreeImage.h`加入到Xcode工程中
-
-##### 使用方法：
-
-```cpp
-glBindFramebuffer(GL_FRAMEBUFFER, 0); // 切换回默认帧缓冲
-unsigned char* data = (unsigned char*)malloc(3 * width * height);
-glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-// 将数据保存为图片，可以使用第三方库，比如stb_image或者FreeImage
-// 保存为PNG图片示例（需要FreeImage库）：
-FIBITMAP* image = FreeImage_ConvertFromRawBits(data, width, height, 3 * width, 24, 0xFF0000, 0x00FF00, 0x0000FF, false);
-FreeImage_Save(FIF_PNG, image, "output.png", 0);
-FreeImage_Unload(image);
-
-free(data); // 释放内存
-```
-
-#### 2.stb_image库
+#### 1.stb_image库
 
 或者就用我们之前加载纹理时的库，这里要去下载`stb_image_write`库，和stb_image使用原理类似
 
@@ -1497,3 +1467,17 @@ TODO：厚度为0.1f的box有问题，检查一下
 #### （2）画面闪动
 
 一般是跟opengl状态有关，一般是深度测试的原因，请检查`glEnable(GL_DEPTH_TEST);`这个代码是否在主循环中调用（或者你只在初始化时调用了，然后又被其他修改了）
+
+#### （3）渲染到纹理（帧缓冲）报错
+
+若framebuffer为不完整的，可能原因：
+
+- 检查width和height是否错误，可能为0
+
+  ```cpp
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+  ```
+
+#### （4）Mac渲染到纹理扭曲
+
+视网膜显示器导致的，我们需要将framebuffer长宽各扩大

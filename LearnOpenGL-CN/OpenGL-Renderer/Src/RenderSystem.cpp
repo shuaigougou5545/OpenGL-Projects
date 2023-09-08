@@ -1,98 +1,37 @@
 #include "RenderSystem.h"
 
 
+RenderSystem::~RenderSystem()
+{
+    
+}
+
+
 void RenderSystem::initialize()
 {
     initModels();
     initOpenGLObjects();
     initTextures();
-    initShaders();
     initLogic();
 }
 
 void RenderSystem::tick(float delta_time)
 {
-    auto window = window_sys->getWindow();
-    glfwGetWindowSize(window, &window_width, &window_height);
+    initShaders();
+//    updateLogic();
     
-    viewport_width = window_width;
-    viewport_height = window_height;
+    std::cout << window_sys->post_process_info.isUsePostProcessing << std::endl;
     
-#ifdef __APPLE__
-    viewport_width *= 2;
-    viewport_height *= 2;
-#endif
+//    if(window_sys->post_process_info.isUsePostProcessing){
+//        postprocess_ptr->BindFBO();
+//    }
+
+    draw();
     
-    postprocess_ptr->BindFBO();
-    
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    
-    auto sc = shader_constructors[0];
-    sc.use();
-    sc.setInt("gMat.DiffuseTexture", 0);
-    glBindTexture(GL_TEXTURE_2D, textures[0]);
-
-    
-    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    auto& camera = window_sys->camera;
-
-    //
-    // Shared: Uniform
-    //
-    MVP mvp;
-    mvp.view = camera.GetViewMatrix();
-    mvp.projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
-    sc.setMat4("view", glm::value_ptr(mvp.view));
-    sc.setMat4("projection", glm::value_ptr(mvp.projection));
-
-    glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
-    sc.setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
-
-    const int MaxLights = 16;
-    Light lights[MaxLights];
-    lights[0].Strength = glm::vec3(0.6f, 0.6f, 0.6f);
-    lights[0].Direction = glm::vec3(0.57735f, -0.57735f, 0.57735f);
-    lights[1].Strength = glm::vec3(0.3f, 0.3f, 0.3f);
-    lights[1].Direction = glm::vec3(-0.57735f, -0.57735f, 0.57735f);
-    lights[2].Strength = glm::vec3(0.15f, 0.15f, 0.15f);
-    lights[2].Direction = glm::vec3(0.0f, -0.707f, -0.707f);
-    sc.setVec3("gLights[0].Strength", glm::value_ptr(lights[0].Strength));
-    sc.setVec3("gLights[0].Direction", glm::value_ptr(lights[0].Direction));
-    sc.setVec3("gLights[1].Strength", glm::value_ptr(lights[1].Strength));
-    sc.setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
-    sc.setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
-    sc.setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
-
-    sc.setVec3("gViewPos", glm::value_ptr(camera.Position));
-
-
-    //
-    // Skull
-    //
-    mvp.model = glm::mat4(1.0);
-    mvp.model = glm::translate(mvp.model, glm::vec3(0.f, 0.f, 0.f));
-    mvp.model = glm::rotate(mvp.model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
-    mvp.model = glm::scale(mvp.model, glm::vec3(1.f));
-    sc.setMat4("model", glm::value_ptr(mvp.model));
-
-    Material mat;
-    mat.FresnelR0 = glm::vec3(0.05f);
-    mat.Roughness = 0.3f;
-    mat.DiffuseAlbedo = glm::vec4(0.69f, 0.77f, 0.87f, 1.0f);
-    sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
-    sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
-    sc.setFloat("gMat.Roughness", mat.Roughness);
-
-    glBindVertexArray(VAOs[0]);
-    glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
-    
-    postprocess_ptr->RenderToTexture();
+//    if(window_sys->post_process_info.isUsePostProcessing){
+//        postprocess_ptr->Initialize();
+//        postprocess_ptr->RenderToTexture();
+//    }
 }
 
 void RenderSystem::shutdown()
@@ -148,11 +87,94 @@ void RenderSystem::initTextures()
 
 void RenderSystem::initShaders()
 {
-    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
-    shader_constructors.push_back(sc);
+    shader_constructor_ptr = std::make_shared<ShaderConstructor>("./Shaders/VS.vert", "./Shaders/FS.frag");
 }
 
 void RenderSystem::initLogic()
 {
-    postprocess_ptr = std::make_shared<PostProcess>(viewport_width, viewport_height);
+//    postprocess_ptr = std::make_shared<PostProcess>(viewport_width, viewport_height, window_sys->post_process_info);
+}
+
+void RenderSystem::updateLogic()
+{
+    auto window = window_sys->getWindow();
+    glfwGetWindowSize(window, &window_width, &window_height);
+    
+    viewport_width = window_width;
+    viewport_height = window_height;
+    
+#ifdef __APPLE__
+    viewport_width *= 2;
+    viewport_height *= 2;
+#endif
+}
+
+void RenderSystem::draw()
+{
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    
+    auto sc = shader_constructor_ptr;
+    sc->use();
+    sc->setInt("gMat.DiffuseTexture", 0);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+
+    
+    glm::vec4 clear_color = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    auto& camera = window_sys->camera;
+
+    //
+    // Shared: Uniform
+    //
+    MVP mvp;
+    mvp.view = camera.GetViewMatrix();
+    mvp.projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
+    sc->setMat4("view", glm::value_ptr(mvp.view));
+    sc->setMat4("projection", glm::value_ptr(mvp.projection));
+
+    glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
+    sc->setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
+
+    const int MaxLights = 16;
+    Light lights[MaxLights];
+    lights[0].Strength = glm::vec3(0.6f, 0.6f, 0.6f);
+    lights[0].Direction = glm::vec3(0.57735f, -0.57735f, 0.57735f);
+    lights[1].Strength = glm::vec3(0.3f, 0.3f, 0.3f);
+    lights[1].Direction = glm::vec3(-0.57735f, -0.57735f, 0.57735f);
+    lights[2].Strength = glm::vec3(0.15f, 0.15f, 0.15f);
+    lights[2].Direction = glm::vec3(0.0f, -0.707f, -0.707f);
+    sc->setVec3("gLights[0].Strength", glm::value_ptr(lights[0].Strength));
+    sc->setVec3("gLights[0].Direction", glm::value_ptr(lights[0].Direction));
+    sc->setVec3("gLights[1].Strength", glm::value_ptr(lights[1].Strength));
+    sc->setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
+    sc->setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
+    sc->setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
+
+    sc->setVec3("gViewPos", glm::value_ptr(camera.Position));
+
+
+    //
+    // Skull
+    //
+    mvp.model = glm::mat4(1.0);
+    mvp.model = glm::translate(mvp.model, glm::vec3(0.f, 0.f, 0.f));
+    mvp.model = glm::rotate(mvp.model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
+    mvp.model = glm::scale(mvp.model, glm::vec3(1.f));
+    sc->setMat4("model", glm::value_ptr(mvp.model));
+
+    Material mat;
+    mat.FresnelR0 = glm::vec3(0.05f);
+    mat.Roughness = 0.3f;
+    mat.DiffuseAlbedo = glm::vec4(0.69f, 0.77f, 0.87f, 1.0f);
+    sc->setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
+    sc->setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
+    sc->setFloat("gMat.Roughness", mat.Roughness);
+
+    glBindVertexArray(VAOs[0]);
+    glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
 }

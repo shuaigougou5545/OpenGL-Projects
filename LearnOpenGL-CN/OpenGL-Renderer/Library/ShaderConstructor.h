@@ -8,16 +8,19 @@
 #include <sstream>
 #include <iostream>
 #include <cstring>
+#include <vector>
 
 
 class ShaderConstructor{
+private:
+    std::string vsPath, fsPath;
+    
 public:
     unsigned int ID; // shader program ID
     
-    ShaderConstructor(const std::string vsPath, const std::string fsPath, const std::string vsMacroString = "", const std::string fsMacroString = "");
+    ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString = "", const std::string fsMacroString = "");
     ~ShaderConstructor();
     void use();
-    void destroy();
     
     // set-uniform functions
     void setBool(const std::string &name, bool value, GLint LocationOffset = 0) const;

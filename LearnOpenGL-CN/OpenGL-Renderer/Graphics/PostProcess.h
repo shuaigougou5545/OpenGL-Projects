@@ -3,6 +3,11 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -10,15 +15,35 @@
 #include "ShaderConstructor.h"
 
 
+
+struct GuassianBlurInfo{
+    float blur_size = 1.0f;
+};
+
+struct PostProcessInfo{
+    bool isUsePostProcessing = false;
+    bool isUseGaussianBlur = false;
+    GuassianBlurInfo guassian_blur_info;
+};
+
 class PostProcess{
 public:
-    PostProcess(int width, int height);
+    PostProcess(int width, int height, PostProcessInfo info = PostProcessInfo());
     ~PostProcess();
+    
+    PostProcessInfo m_info;
+    
+    void Initialize();
+    void Destroy();
     
     void BindFBO();
     void RenderToTexture();
-    void Destroy();
     
+    std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
+    
+    void GaussianBlur();
+    
+private:
     GLuint fbo;
     GLuint texture;
     GLuint rbo;
@@ -26,9 +51,6 @@ public:
     GLuint quadVAO;
     GLuint quadVBO;
     
-    std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
-    
-private:
     void CreateOpenGLObjects();
     void CreateShader();
     void DrawScreenQuad();

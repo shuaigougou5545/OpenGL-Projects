@@ -20,7 +20,7 @@ void Engine::startEngine()
     window_sys = std::make_shared<WindowSystem>();
     window_sys->initialize(info);
 
-    render_sys = std::make_shared<RenderSystem>(window_sys.get());
+    render_sys = std::make_shared<RenderSystem>(window_sys);
     render_sys->initialize();
     
     window = window_sys->getWindow();

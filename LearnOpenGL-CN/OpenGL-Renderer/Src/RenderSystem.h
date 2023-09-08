@@ -28,8 +28,8 @@ struct MVP{
 
 class RenderSystem{
 public:
-    RenderSystem(WindowSystem* _ws) : window_sys(_ws){}
-    ~RenderSystem() = default;
+    RenderSystem(std::shared_ptr<WindowSystem> _ws) : window_sys(_ws){}
+    ~RenderSystem();
     
     void initialize();
     void tick(float delta_time);
@@ -40,17 +40,20 @@ public:
     void initTextures();
     void initShaders();
     void initLogic();
+    
+    void updateLogic();
+    void draw();
 private:
     std::vector<Model> models;
     std::vector<GLuint> VBOs;
     std::vector<GLuint> EBOs;
     std::vector<GLuint> VAOs;
     std::vector<GLuint> textures;
-    std::vector<ShaderConstructor> shader_constructors;
-    WindowSystem* window_sys;
+    std::shared_ptr<WindowSystem> window_sys;
     int window_width = 800, window_height = 600;
     int viewport_width = 1600, viewport_height = 1200;
     
+    std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
     std::shared_ptr<PostProcess> postprocess_ptr;
 };
 

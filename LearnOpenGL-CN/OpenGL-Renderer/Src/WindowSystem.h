@@ -3,14 +3,18 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "Camera.h"
-#include "ImguiGenerator.h"
 
 #include <iostream>
 #include <memory>
+
+#include "Camera.h"
+#include "ImguiGenerator.h"
+#include "PostProcess.h"
+
 
 
 struct WindowInfo
@@ -47,8 +51,6 @@ public:
     float deltaTime = 0.f;
     float lastFrame = 0.f;
     
-    bool render_to_pic = false;
-    
     void processInput(GLFWwindow *window);
     void DrawImguiUI();
     
@@ -65,6 +67,11 @@ private:
     int m_width = 0, m_height = 0;
     
     void renderToPicture(const char* file_name, GLint fbo = 0);
+
+public:
+    bool render_to_pic = false;
+    
+    PostProcessInfo post_process_info;
 };
 
 

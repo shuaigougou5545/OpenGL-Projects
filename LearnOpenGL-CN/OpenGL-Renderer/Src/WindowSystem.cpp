@@ -120,18 +120,30 @@ void WindowSystem::DrawImguiUI()
     glfwGetWindowSize(window, &window_width, &window_height);
     ImGui::Text("Camera position: %.1f, %.1f, %.1f", camera.Position.x, camera.Position.y, camera.Position.z);
     ImGui::Text("Camera front: %.1f, %.1f, %.1f", camera.Front.x, camera.Front.y, camera.Front.z);
-    ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
+    ImGui::Text("WindowSize: width - %i, height - %i", window_width, window_height);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig->io->Framerate, ig->io->Framerate);
     
     render_to_pic = ImGui::Button("Render to Picture");
     if(render_to_pic)
-    {
         renderToPicture("./output.jpg");
-    }
+    
+    ImGui::Checkbox("Post Processing", &post_process_info.isUsePostProcessing);
     
     ImGui::End();
-    ImGui::Render();
     
+    // Post Processing
+    if(post_process_info.isUsePostProcessing)
+    {
+        ImGui::Begin("Post Processing");
+        ImGui::Checkbox("Gaussian Blur", &post_process_info.isUseGaussianBlur);
+        if(post_process_info.isUseGaussianBlur)
+        {
+            ImGui::SliderFloat("blur_size", &post_process_info.guassian_blur_info.blur_size, 1.0, 100.0);
+        }
+        ImGui::End();
+    }
+    
+    ImGui::Render();
     ig->DrawWindow();
 }
 
