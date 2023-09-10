@@ -14,11 +14,11 @@ void RenderSystem::initialize()
     initTextures();
     initLogic();
     initSkybox();
+    initShaders(); // 暂时放这里,防止内存泄漏
 }
 
 void RenderSystem::tick(float delta_time)
 {
-    initShaders();
     draw();
 }
 

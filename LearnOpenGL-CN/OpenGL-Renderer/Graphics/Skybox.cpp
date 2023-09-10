@@ -8,12 +8,14 @@ Skybox::Skybox(const std::vector<std::string>& vs) : faces(vs)
     is_dirty = true;
     initOpenGLObjects();
     initShaders();
-    update();
+    texture = loadCubemap(faces);
 }
 
 Skybox::~Skybox()
 {
-
+    glDeleteTextures(1, &texture);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 }
 
 void Skybox::initOpenGLObjects()
@@ -87,6 +89,7 @@ void Skybox::drawSkybox(const glm::mat4& view, const glm::mat4& projection)
 
 void Skybox::update()
 {
+    glDeleteTextures(1, &texture);
     texture = loadCubemap(faces);
     is_dirty = false;
 }
