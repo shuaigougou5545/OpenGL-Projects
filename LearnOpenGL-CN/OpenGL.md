@@ -1284,6 +1284,69 @@ glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)(sizeof(
 
 分批的好处：不用单独整理一个交叉相错的顶点属性数组，数据看起来更整洁，其他无明显优点
 
+#### （3）复制缓冲区数据
+
+可能有时候希望将缓冲区数据复制到另一个缓冲区中，可以通过`glCopyBufferSubData`实现：
+
+```cpp
+void glCopyBufferSubData(GLenum readtarget, GLenum writetarget, GLintptr readoffset,
+                         GLintptr writeoffset, GLsizeiptr size);
+```
+
+但是，会有一种情况：我们知道OpenGL一个缓冲类型只能绑定一个缓冲区在上面，所以如果我们希望将VBO的数据复制到另一个VBO上，就需要借助另外两个缓冲目标：`GL_COPY_READ_BUFFER`、`GL_COPY_WRITE_BUFFER`
+
+也就是说，我们可以把VBO绑定在这两个可选的缓冲对象上，实现复制：
+
+```cpp
+glBindBuffer(GL_COPY_READ_BUFFER, vbo1);
+glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2); // 当然也可以使用GL_ARRAY_BUFFER
+glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vertexData));
+```
+
+### 9.高级GLSL
+
+#### （1）GLSL内建变量
+
+常见内建变量：
+
+- `gl_Position`：vs的输出向量（裁剪空间的位置）
+- `gl_FragCoord`：
+
+其他内建变量：
+
+- 顶点着色器
+
+  - `gl_PointSize`：（输出变量，类型：float）当我们以`GL_POINTS`的图元来渲染时，我们可以在vertex shader中输出当前渲染的点的大小 => 注意：默认是不能在vertex shader中修改点的大小，需要启用状态：`glEnable(GL_PROGRAM_POINT_SIZE)` => 在粒子生成之类的技术中有用
+
+  - `gl_VertexID`：（vs输入变量，类型：int）当前渲染顶点的索引（glDrawElements则为对应当前索引，glDrawArrays则为对应顶点数量）=> 可以用来索引数组，比如我们有一个数组存储顶点的属性，我们通过gl_VertexID来找到对应下标
+
+- 像素/片段着色器
+
+  - `gl_FragCoord`：（输入变量，类型：vec4）x/y分量表示在屏幕上的坐标(以左下角为顶点) ，z分量为当前片元的深度值，w通常为1=> **与shadertoy相通**
+
+  - `gl_FrontFacing`：（输入变量，类型：bool）告诉我们当前像素/片段属于正向面还是背向面，true：正向面 => 可以通过这个输入为三角形正背面独立渲染，比如正面使用A纹理，背面使用B纹理 => 前提：没开启背面剔除，开启再用这个属性就没啥意义了
+
+  - 🌟<font color='purple'>**`gl_FragDepth`**</font>：（输出变量，类型：float）<font color='green'>**`gl_FragCoord`中我们可以读取像素的深度值，但它是只可读不可写，我们可以通过`gl_fragDepth`来在片段着色器中修改z值**</font> => <font color='red'>**>= OpenGL 4.2 版本**</font>
+
+    - => 但我们一旦通过`gl_FragDepth`写入深度值，OpenGL就会自动**禁止所有的提前深度测试**
+
+    - 我们可以在片段着色器的顶部使用**深度条件**重新声明gl_FragDepth变量
+
+      ```glsl
+      layout(depth_<condition>) out float gl_FragDepth;
+      // depth_any depth_greater depth_less depth_unchanged
+      ```
+
+      <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309101811449.png" alt="截屏2023-09-10 18.10.50" style="zoom:50%;" />
+
+      可以通过设置深度条件，告诉OpenGL我们会对深度值进行修改的方向，比如greater和less能够辅助OpenGL进行部分的提前深度测试
+
+#### （2）接口块
+
+
+
+#### （3）Uniform缓冲对象
+
 ## C1 调试
 
 ### 1.glGetError()
