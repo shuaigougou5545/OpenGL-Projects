@@ -24,28 +24,32 @@ Model::Model(const std::string& modelPath)
     vMin = glm::vec3(std::numeric_limits<float>::max());
     vMax = glm::vec3(std::numeric_limits<float>::min());
 
-    vertices.resize(vcount);
+    pos_list.resize(vcount);
+    normal_list.resize(vcount);
+    tangent_list.resize(vcount);
+    texc_list.resize(vcount);
+    
+    
     for (int i = 0; i < vcount; ++i)
     {
-        fin >> vertices[i].Pos.x >> vertices[i].Pos.y >> vertices[i].Pos.z;
-        fin >> vertices[i].Normal.x >> vertices[i].Normal.y >> vertices[i].Normal.z;
+        fin >> pos_list[i].x >> pos_list[i].y >> pos_list[i].z;
+        fin >> normal_list[i].x >> normal_list[i].y >> normal_list[i].z;
 
-        vertices[i].TexC = glm::vec2(0.f, 0.f);
+        texc_list[i] = glm::vec2(0.f, 0.f);
 
-        auto N = vertices[i].Normal;
+        auto N = normal_list[i];
         auto up = glm::vec3(0.0f, 1.0f, 0.0f);
 
         if(glm::dot(N, up) < 1.0f - 0.001f){
             auto T = glm::normalize(glm::cross(up, N));
-            vertices[i].Tangent = T;
+            tangent_list[i] = T;
         }
         else
         {
             up = glm::vec3(0.f, 0.f, 1.f);
             auto T = glm::normalize(glm::cross(N, up));
-            vertices[i].Tangent = T;
+            tangent_list[i] = T;
         }
-        
     }
 
     bounds.Center = 0.5f * (vMin + vMax);
@@ -62,20 +66,6 @@ Model::Model(const std::string& modelPath)
     }
 
     fin.close();
-    
-    
-    // build OpenGL VBO data
-    const int elementsPerRow = 6;
-    vertices_vbo.resize(vertices.size() * elementsPerRow);
-    for(int i = 0; i < vertices.size(); i++)
-    {
-        vertices_vbo[elementsPerRow * i + 0] = vertices[i].Pos.x;
-        vertices_vbo[elementsPerRow * i + 1] = vertices[i].Pos.y;
-        vertices_vbo[elementsPerRow * i + 2] = vertices[i].Pos.z;
-        vertices_vbo[elementsPerRow * i + 3] = vertices[i].Normal.x;
-        vertices_vbo[elementsPerRow * i + 4] = vertices[i].Normal.y;
-        vertices_vbo[elementsPerRow * i + 5] = vertices[i].Normal.z;
-    }
 }
 
 Model::~Model()

@@ -788,6 +788,8 @@ BlinnPhong需要注意的点：
 
 <font color='red'>**法向量之所以特殊，是因为它是从属于顶点位置的**</font>，也就是说，先有顶点位置，才有法向量；特殊地，当我们对顶点数据进行了**不等比缩放**时，对法向量进行同等变换，会让法向量不再垂直于顶点平面
 
+我们输入的是局部空间的normal，如果想要计算出世界空间的normal，需要为该normal施加特别的model矩阵
+
 <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202308181301498.png" alt="basic_lighting_normal_transformation" style="zoom: 100%;" />
 
 所以说我们需要对法向量定制一个特殊的模型矩阵(model) - 法线矩阵：
@@ -1128,6 +1130,8 @@ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDER
 
 ### 7.Cube Map
 
+#### （1）cubemap使用
+
 cubemap立方体贴图有六张纹理，通过**方向向量**来计算采样点，使用方法和普通纹理类似：
 
 使用类型`GL_TEXTURE_CUBE_MAP`，我们需要通过`glTexImage2D`函数6次，依次对6个面设置纹理，纹理目标有6个，在shader中使用`samplerCube`：
@@ -1193,7 +1197,92 @@ glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); // �
     }
     ```
 
-    
+#### （2）环境映射 - environment mapping
+
+环境映射主要包含两方面：反射、折射
+
+- 反射：这里的反射是指完全反射，通过观察向量与法向量，计算出反射向量，并用反射向量去采样cubemap
+
+  - 反射函数：`reflect(被反射的向量, 法线)`
+
+  - ```glsl
+    vec3 view = normalize(positionW - cameraPosW);
+    vec3 R = reflect(view, normalize(normalW));
+    FragColor = texture(cubemap, R);
+    ```
+
+- 折射：光线穿过物体到达眼睛，这里我们只考虑一次折射（严格意义来说，进出物体都要发生折射），从视觉效果上来看够了
+
+  - 折射函数：`refract(被折射的向量, 法线, 折射系数)`
+
+  - ```glsl
+    float ratio = 1.00 / 1.52;
+    vec3 view = normalize(positionW - cameraPosW);
+    vec3 R = refract(view, normalize(normalW), ratio);
+    FragColor = texture(cubemap, R);
+    ```
+
+反射贴图：指定该位置反射的比例，并不是百分之百反射
+
+#### （3）动态环境映射
+
+之间我们使用的是静态的cubemap纹理，我们实际上可以将场景渲染到cubemap的六个面上，我们就用了动态物体的信息，但是比较费
+
+### 8.高级数据
+
+#### （1）缓冲区
+
+```cpp
+void glBufferData(GLenum target, GLsizeiptr size, const GLvoid *data, GLenum usage)
+// target: GL_TEXTURE_2D
+// size: 占总字节数
+// data: 数据数组指针
+// usage: GL_STATIC_DRAW ...
+```
+
+如果我们将`glBufferData`的`data`参数设置为`NULL`，则只会分配空间而不会填充数据。但`glBufferData`只能一次性填充整个缓冲区的数据，我们可以通过`glBufferSubData`来填充缓冲区的特定区域
+
+```cpp
+void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data)
+// 可以从偏移量offset处开始填充size字节的数据
+```
+
+另外，我们可以通过获取缓冲区指针的方式，直接通过缓冲区指针来给缓冲区注入数据，而不用通过`glBufferData`
+
+```cpp
+glBindBuffer(GL_ARRAY_BUFFER, buffer);
+void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); // 获取缓冲区指针
+memcpy(ptr, data, sizeof(data));
+glUnMapBuffer(GL_ARRAY_BUFFER); // 告诉OpenGL不在使用指针
+```
+
+#### （2）分批顶点属性
+
+默认的顶点数据摆放方式：连续并排穿插循环摆放，也就是说，如果有三个顶点属性(1\2\3)，在数据中摆放方式：123123123 => 我们可以通过**分批**（batched）的方式改变成111222333（batch的意思是打包，我们将每种数据打包在一起，再合成一个大的区块）
+
+🤔️平常我们从模型文件中获取顶点属性时，我们常常得到的是几个数组，比如位置数组、法线数组、纹理坐标数组，这些数组本身是分开的，我们之前为了好写入VBO而专门把它们转换为了一个大的交错数据数组，这很费力气。
+
+我们通过`glBufferSubData()`实现数据的分批：
+
+```cpp
+float positions[] = { ... };
+float normals[] = { ... };
+float tex[] = { ... };
+// 填充缓冲
+glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions);
+glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions), sizeof(normals), &normals);
+glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions) + sizeof(normals), sizeof(tex), &tex);
+
+// 更新VAO
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);  
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)(sizeof(positions)));  
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)(sizeof(positions)+sizeof(normals)));
+// 修改步长和偏移量:
+// 倒数第2个参数: 布长,因为现在同属性的数据紧密相连,所以步长就为该属性的大小
+// 倒数第1个参数: 偏移量,数据从哪处为起点
+```
+
+分批的好处：不用单独整理一个交叉相错的顶点属性数组，数据看起来更整洁，其他无明显优点
 
 ## C1 调试
 
@@ -1518,6 +1607,12 @@ TODO：将窗口事件处理和渲染分离到不同的线程中
   - 一般将帧缓冲的分辨率设置为实际物理屏幕分辨率的两倍，以匹配高分辨率屏幕的像素密度
 
 TODO：后续在继续研究这个问题，目前我将viewport设置为实际窗口大小的两倍
+
+## Q3 常见贴图类型
+
+> 参考文章：https://zhuanlan.zhihu.com/p/260973533
+
+
 
 ## M1 常见问题
 

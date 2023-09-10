@@ -51,12 +51,21 @@ void RenderSystem::initOpenGLObjects()
         glBindBuffer(GL_ARRAY_BUFFER, VBOs[i]);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[i]);
         
-        glBufferData(GL_ARRAY_BUFFER, models[i].vertices_vbo.size() * sizeof(float), models[i].vertices_vbo.data(), GL_STATIC_DRAW);
+        // pos normal
+        size_t pos_size = models[i].pos_list.size() * sizeof(glm::vec3);
+        size_t normal_size = models[i].normal_list.size() * sizeof(glm::vec3);
+        size_t size = pos_size + normal_size;
+        
+        // batched data
+        glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, pos_size, models[i].pos_list.data());
+        glBufferSubData(GL_ARRAY_BUFFER, pos_size, normal_size, models[i].normal_list.data());
+        
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, models[i].indices.size() * sizeof(unsigned int), models[i].indices.data(), GL_STATIC_DRAW);
         
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)pos_size);
         glEnableVertexAttribArray(1);
         
         
