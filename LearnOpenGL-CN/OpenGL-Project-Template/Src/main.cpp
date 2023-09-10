@@ -37,6 +37,51 @@ bool mouseOnImguiWindow = false;
 float deltaTime = 0.f;
 float lastFrame = 0.f;
 
+float skyboxVertices[] = {
+    // positions
+    -1.0f,  1.0f, -1.0f,
+    -1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+
+    -1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f,
+    -1.0f, -1.0f,  1.0f,
+
+    -1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f, -1.0f,
+     1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,
+    -1.0f,  1.0f, -1.0f,
+
+    -1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f, -1.0f,
+     1.0f, -1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f,  1.0f
+};
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -87,17 +132,20 @@ int main()
     // vertex input:
     //
     Model skull("./Models/skull.txt");
+    Model skybox("./Models/box.txt");
     
     
     //
     // VAO VBO EBO
     //
     unsigned int VAO, VBO, EBO;
+    unsigned int skybox_VAO, skybox_VBO;
     
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     
+    // object
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -110,6 +158,22 @@ int main()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    
+    // skybox
+    glGenVertexArrays(1, &skybox_VAO);
+    glGenBuffers(1, &skybox_VBO);
+    
+    glBindVertexArray(skybox_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skybox_VBO);
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -119,55 +183,30 @@ int main()
     //
     // texture
     //
-    unsigned int texture;
-    texture = loadTexture("./Textures/container2.png");
-    
-    
-    //
-    // Advanced OpenGL
-    //
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    unsigned int texture_cubemap, texture;
+    std::vector<std::string> faces = {
+        "./Textures/skybox/right.jpg",
+        "./Textures/skybox/left.jpg",
+        "./Textures/skybox/top.jpg",
+        "./Textures/skybox/bottom.jpg",
+        "./Textures/skybox/front.jpg",
+        "./Textures/skybox/back.jpg",
+    };
+    texture_cubemap = loadCubemap(faces);
+    texture = loadTexture("./Textures/container.jpg");
     
     
     //
     // shader
     //
-    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag", "", "");
+    ShaderConstructor sc("./Shaders/VS.vert", "./Shaders/FS.frag");
+    ShaderConstructor skybox_sc("./Shaders/skybox_vs.vert", "./Shaders/skybox_fs.frag");
     
     
-    //
-    // Render to Texture
-    //
-    unsigned int fbo;
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    unsigned int texture_fb;
-    glGenTextures(1, &texture_fb);
-    glBindTexture(GL_TEXTURE_2D, texture_fb);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_fb, 0);
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
-        std::cout << "ERROR [framebuffer]: Framebuffer is not complete!'" << std::endl;
-        return -1;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
-    
-    //
-    // other
-    //
-    sc.use();
-    sc.setInt("gMat.DiffuseTexture", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // OpenGL Status
+    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
     
     
     while(!glfwWindowShouldClose(window))
@@ -192,31 +231,45 @@ int main()
         ImGui::Text("Framebuffer: width - %i, height - %i", window_width, window_height);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ig.io->Framerate, ig.io->Framerate);
         
-//        bool render_to_pic = false;
-//        render_to_pic = ImGui::Button("Render to Picture");
-//        if(render_to_pic){
-//            unsigned char* image_data;
-//            glReadPixels(0, 0, SCR_WIDTH, SCR_HEIGHT, GL_RGB, GL_UNSIGNED_BYTE, image_data);
-//            stbi_write_png("./output.png", SCR_WIDTH, SCR_HEIGHT, 3, image_data, 0);
-//        }
-        
         ImGui::End();
         ImGui::Render();
         
         
-        //
-        // Shared: Uniform
-        //
         glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
         
+        
+        //
+        // skybox
+        //
+        glDepthFunc(GL_LEQUAL);
+        glDepthMask(GL_FALSE);
+        skybox_sc.use();
+        skybox_sc.setInt("cubemap", 0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texture_cubemap);
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
+        skybox_sc.setMat4("view", glm::value_ptr(view));
+        skybox_sc.setMat4("projection", glm::value_ptr(projection));
+        glBindVertexArray(skybox_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        glDepthMask(GL_TRUE);
+        
+        
+        // objects
+        glDepthFunc(GL_LESS);
+        sc.use();
+        sc.setInt("gMat.DiffuseTexture", 0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
         view = camera.GetViewMatrix();
         projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.f);
         sc.setMat4("view", glm::value_ptr(view));
         sc.setMat4("projection", glm::value_ptr(projection));
-        
+
         glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
         sc.setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
-        
+
         const int MaxLights = 16;
         Light lights[MaxLights];
         lights[0].Strength = glm::vec3(0.6f, 0.6f, 0.6f);
@@ -231,10 +284,10 @@ int main()
         sc.setVec3("gLights[1].Direction", glm::value_ptr(lights[1].Direction));
         sc.setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
         sc.setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
-        
+
         sc.setVec3("gViewPos", glm::value_ptr(camera.Position));
-        
-        
+
+
         //
         // Skull
         //
@@ -243,7 +296,7 @@ int main()
         model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
         model = glm::scale(model, glm::vec3(1.f));
         sc.setMat4("model", glm::value_ptr(model));
-        
+
         Material mat;
         mat.FresnelR0 = glm::vec3(0.05f);
         mat.Roughness = 0.3f;
@@ -251,10 +304,9 @@ int main()
         sc.setVec4("gMat.DiffuseAlbedo", glm::value_ptr(mat.DiffuseAlbedo));
         sc.setVec3("gMat.FresnelR0", glm::value_ptr(mat.FresnelR0));
         sc.setFloat("gMat.Roughness", mat.Roughness);
-    
+
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, int(skull.indices.size()), GL_UNSIGNED_INT, 0);
-//        glDrawArrays(GL_TRIANGLES, 0, model.vertices.size());
         
         
         ig.DrawWindow();
@@ -265,7 +317,11 @@ int main()
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
     glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &skybox_VBO);
+    glDeleteVertexArrays(1, &skybox_VAO);
+    
     sc.destory();
+    skybox_sc.destory();
     
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
@@ -278,6 +334,10 @@ int main()
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+#ifdef __APPLE__
+    width *= 2.0;
+    height *= 2.0;
+#endif
     glViewport(0, 0, width, height);
 }
 

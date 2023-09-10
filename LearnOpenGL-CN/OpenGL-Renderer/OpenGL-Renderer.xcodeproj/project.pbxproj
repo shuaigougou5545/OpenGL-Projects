@@ -12,6 +12,7 @@
 		941FD61B2A864A3800C932DD /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD61A2A864A3800C932DD /* IOKit.framework */; };
 		941FD6222A864C5200C932DD /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 941FD6212A864C5200C932DD /* libglfw3.a */; };
 		942C4E2A2AA77F8200DF276C /* PostProcess.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 942C4E292AA77F8200DF276C /* PostProcess.cpp */; };
+		943A99522AAD6FB700D42907 /* Skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 943A99512AAD6FB700D42907 /* Skybox.cpp */; };
 		945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706722A8B249600C1D597 /* imgui_widgets.cpp */; };
 		945706822A8B249600C1D597 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706782A8B249600C1D597 /* imgui.cpp */; };
 		945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067B2A8B249600C1D597 /* imgui_impl_opengl3.cpp */; };
@@ -58,6 +59,10 @@
 		942C4E292AA77F8200DF276C /* PostProcess.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PostProcess.cpp; sourceTree = "<group>"; };
 		942C4E2B2AA7867100DF276C /* libfreeimage.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreeimage.a; path = ../../3rd_party/FreeImage/libfreeimage.a; sourceTree = "<group>"; };
 		942DE2602AA0CD6900187F1C /* stb_image_write.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image_write.h; sourceTree = "<group>"; };
+		943A99502AAD6FB700D42907 /* Skybox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Skybox.h; sourceTree = "<group>"; };
+		943A99512AAD6FB700D42907 /* Skybox.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Skybox.cpp; sourceTree = "<group>"; };
+		943A99552AAD7ADE00D42907 /* skybox_vs.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = skybox_vs.vert; sourceTree = "<group>"; };
+		943A99562AAD7ADE00D42907 /* skybox_fs.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = skybox_fs.frag; sourceTree = "<group>"; };
 		9457066F2A8B249600C1D597 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
 		945706702A8B249600C1D597 /* imstb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imstb_textedit.h; sourceTree = "<group>"; };
 		945706712A8B249600C1D597 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
@@ -608,6 +613,8 @@
 		941FD6282A864F1B00C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				943A99562AAD7ADE00D42907 /* skybox_fs.frag */,
+				943A99552AAD7ADE00D42907 /* skybox_vs.vert */,
 				94B5A9F92AA8A324001FF102 /* PostProcess_fs.frag */,
 				94B5A9FA2AA8A324001FF102 /* PostProcess_vs.vert */,
 				94AB12A42A887E920004D601 /* FS.frag */,
@@ -621,6 +628,8 @@
 			children = (
 				942C4E282AA77F8200DF276C /* PostProcess.h */,
 				942C4E292AA77F8200DF276C /* PostProcess.cpp */,
+				943A99502AAD6FB700D42907 /* Skybox.h */,
+				943A99512AAD6FB700D42907 /* Skybox.cpp */,
 			);
 			path = Graphics;
 			sourceTree = "<group>";
@@ -1248,6 +1257,7 @@
 				94ECD32F2A9637CD00FE034E /* Model.cpp in Sources */,
 				945706842A8B249600C1D597 /* imgui_tables.cpp in Sources */,
 				94ECD31E2A937E7300FE034E /* Material.cpp in Sources */,
+				943A99522AAD6FB700D42907 /* Skybox.cpp in Sources */,
 				94BAEDB42AA0D41300237B3F /* stb_image_write.cpp in Sources */,
 				94FEA8262A87E48E003C8A3D /* ShaderConstructor.cpp in Sources */,
 				94AB14602A89CB2A0004D601 /* glm.cpp in Sources */,

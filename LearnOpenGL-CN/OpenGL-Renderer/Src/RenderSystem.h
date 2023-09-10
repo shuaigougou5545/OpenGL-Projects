@@ -15,8 +15,10 @@
 #include "Model.h"
 #include "Light.h"
 #include "Material.h"
+
 #include "WindowSystem.h"
 #include "PostProcess.h"
+#include "Skybox.h"
 
 
 struct MVP{
@@ -40,9 +42,11 @@ public:
     void initTextures();
     void initShaders();
     void initLogic();
+    void initSkybox();
     
     void updateLogic();
     void draw();
+    void drawSkybox();
 private:
     std::vector<Model> models;
     std::vector<GLuint> VBOs;
@@ -55,6 +59,7 @@ private:
     
     std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
     std::shared_ptr<PostProcess> postprocess_ptr;
+    std::shared_ptr<Skybox> skybox_ptr;
 };
 
 

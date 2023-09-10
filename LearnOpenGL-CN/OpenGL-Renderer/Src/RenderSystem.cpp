@@ -13,25 +13,13 @@ void RenderSystem::initialize()
     initOpenGLObjects();
     initTextures();
     initLogic();
+    initSkybox();
 }
 
 void RenderSystem::tick(float delta_time)
 {
     initShaders();
-//    updateLogic();
-    
-    std::cout << window_sys->post_process_info.isUsePostProcessing << std::endl;
-    
-//    if(window_sys->post_process_info.isUsePostProcessing){
-//        postprocess_ptr->BindFBO();
-//    }
-
     draw();
-    
-//    if(window_sys->post_process_info.isUsePostProcessing){
-//        postprocess_ptr->Initialize();
-//        postprocess_ptr->RenderToTexture();
-//    }
 }
 
 void RenderSystem::shutdown()
@@ -95,6 +83,20 @@ void RenderSystem::initLogic()
 //    postprocess_ptr = std::make_shared<PostProcess>(viewport_width, viewport_height, window_sys->post_process_info);
 }
 
+void RenderSystem::initSkybox()
+{
+    std::vector<std::string> faces = {
+        "./Textures/skybox/right.jpg",
+        "./Textures/skybox/left.jpg",
+        "./Textures/skybox/top.jpg",
+        "./Textures/skybox/bottom.jpg",
+        "./Textures/skybox/front.jpg",
+        "./Textures/skybox/back.jpg",
+    };
+    
+    skybox_ptr = std::make_shared<Skybox>(faces);
+}
+
 void RenderSystem::updateLogic()
 {
     auto window = window_sys->getWindow();
@@ -115,7 +117,7 @@ void RenderSystem::draw()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     
-    auto sc = shader_constructor_ptr;
+    auto& sc = shader_constructor_ptr;
     sc->use();
     sc->setInt("gMat.DiffuseTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
@@ -177,4 +179,15 @@ void RenderSystem::draw()
 
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
+    
+    drawSkybox();
+}
+
+void RenderSystem::drawSkybox()
+{
+    auto& camera = window_sys->camera;
+    glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
+    
+    skybox_ptr->drawSkybox(view, projection);
 }

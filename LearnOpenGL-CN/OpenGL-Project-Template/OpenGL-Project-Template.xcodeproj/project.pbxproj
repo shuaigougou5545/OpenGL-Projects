@@ -515,6 +515,8 @@
 		94ECD3292A96343800FE034E /* car.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = car.txt; sourceTree = "<group>"; };
 		94ECD32D2A9637CD00FE034E /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
 		94ECD32E2A9637CD00FE034E /* Model.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Model.cpp; sourceTree = "<group>"; };
+		94F434C82AABFC49006A1C00 /* skybox_vs.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = skybox_vs.vert; sourceTree = "<group>"; };
+		94F434C92AABFC49006A1C00 /* skybox_fs.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = skybox_fs.frag; sourceTree = "<group>"; };
 		94FEA8232A87849D003C8A3D /* DebugFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DebugFunction.h; sourceTree = "<group>"; };
 		94FEA8242A87E48E003C8A3D /* ShaderConstructor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShaderConstructor.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -582,6 +584,8 @@
 		941FD6282A864F1B00C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				94F434C92AABFC49006A1C00 /* skybox_fs.frag */,
+				94F434C82AABFC49006A1C00 /* skybox_vs.vert */,
 				94AB12A42A887E920004D601 /* FS.frag */,
 				94AB12A32A887E920004D601 /* VS.vert */,
 			);
