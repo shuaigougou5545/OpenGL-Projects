@@ -19,6 +19,7 @@
 #include "WindowSystem.h"
 #include "PostProcess.h"
 #include "Skybox.h"
+#include "NormalVisualization.h"
 
 
 struct cbPass{
@@ -44,11 +45,13 @@ public:
     void initShaders();
     void initLogic();
     void initSkybox();
+    void initNormalVisualization();
     
     void updateLogic();
     void draw();
     void updateUniformBlocks();
     void drawSkybox();
+    void drawNormalVisualization();
     
 private:
     std::vector<Model> models;
@@ -65,6 +68,7 @@ private:
     std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
     std::shared_ptr<PostProcess> postprocess_ptr;
     std::shared_ptr<Skybox> skybox_ptr;
+    std::shared_ptr<NormalVisualization> normalvisualization_ptr;
     
     GLuint ubo_cbPass;
 };

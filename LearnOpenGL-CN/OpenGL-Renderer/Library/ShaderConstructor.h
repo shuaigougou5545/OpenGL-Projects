@@ -13,12 +13,12 @@
 
 class ShaderConstructor{
 private:
-    std::string vsPath, fsPath;
+    std::string vsPath, fsPath, gsPath;
     
 public:
     unsigned int ID; // shader program ID
     
-    ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString = "", const std::string fsMacroString = "");
+    ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString = "", const std::string fsMacroString = "", const std::string gs_path = "");
     ~ShaderConstructor();
     void use();
     

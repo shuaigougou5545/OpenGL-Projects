@@ -127,6 +127,12 @@ void WindowSystem::DrawImguiUI()
     if(render_to_pic)
         renderToPicture("./output.jpg");
     
+    ImGui::Checkbox("Normal Visualization", &normal_visualization);
+    if(normal_visualization)
+    {
+        ImGui::SliderFloat("normal_length", &normal_visualization_len, 0.0, 1.0);
+    }
+    
     ImGui::Checkbox("Post Processing", &post_process_info.isUsePostProcessing);
     
     ImGui::End();

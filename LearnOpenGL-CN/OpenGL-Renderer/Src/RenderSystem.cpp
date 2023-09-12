@@ -15,6 +15,7 @@ void RenderSystem::initialize()
     initTextures();
     initLogic();
     initSkybox();
+    initNormalVisualization();
     initShaders(); // 暂时放这里,防止内存泄漏
 }
 
@@ -23,6 +24,8 @@ void RenderSystem::tick(float delta_time)
     updateLogic();
     updateUniformBlocks();
     draw();
+    drawNormalVisualization();
+    drawSkybox();
 }
 
 void RenderSystem::shutdown()
@@ -89,6 +92,7 @@ void RenderSystem::initUniformBlocks()
     glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     
+    // 绑定到binding_point_0上
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo_cbPass);
 }
 
@@ -121,6 +125,11 @@ void RenderSystem::initSkybox()
     };
     
     skybox_ptr = std::make_shared<Skybox>(faces);
+}
+
+void RenderSystem::initNormalVisualization()
+{
+    normalvisualization_ptr = std::make_shared<NormalVisualization>();
 }
 
 void RenderSystem::updateLogic()
@@ -157,6 +166,7 @@ void RenderSystem::draw()
     
     auto& sc = shader_constructor_ptr;
     sc->use();
+    sc->setUniformBlock("cbPass", 0);
     sc->setInt("gMat.DiffuseTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
 
@@ -207,8 +217,26 @@ void RenderSystem::draw()
 
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
+}
+
+void RenderSystem::drawNormalVisualization()
+{
+    if(!window_sys->normal_visualization)
+        return;
     
-    drawSkybox();
+    normalvisualization_ptr->use_shader(window_sys->normal_visualization_len);
+    
+    // TODO: 整理一下，有点乱
+    normalvisualization_ptr->sc_ptr->setUniformBlock("cbPass", 0);
+    
+    glm::mat4 model = glm::mat4(1.0);
+    model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
+    model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
+    model = glm::scale(model, glm::vec3(1.f));
+    normalvisualization_ptr->sc_ptr->setMat4("model", glm::value_ptr(model));
+
+    glBindVertexArray(VAOs[0]);
+    glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);
 }
 
 void RenderSystem::drawSkybox()
@@ -218,3 +246,5 @@ void RenderSystem::drawSkybox()
     
     skybox_ptr->drawSkybox(view, projection);
 }
+
+

@@ -20,6 +20,7 @@
 		945706852A8B249600C1D597 /* imgui_impl_glfw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067E2A8B249600C1D597 /* imgui_impl_glfw.cpp */; };
 		945706862A8B249600C1D597 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9457067F2A8B249600C1D597 /* imgui_demo.cpp */; };
 		945706872A8B249600C1D597 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945706802A8B249600C1D597 /* imgui_draw.cpp */; };
+		945BF8242AB09F1000E39058 /* NormalVisualization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 945BF8232AB09F1000E39058 /* NormalVisualization.cpp */; };
 		948A35972AA5A6FA0009CCFC /* WindowSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35952AA5A6FA0009CCFC /* WindowSystem.cpp */; };
 		948A359A2AA5A7140009CCFC /* RenderSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A35982AA5A7130009CCFC /* RenderSystem.cpp */; };
 		948A359D2AA5A7540009CCFC /* Engine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 948A359B2AA5A7540009CCFC /* Engine.cpp */; };
@@ -82,6 +83,11 @@
 		9457067F2A8B249600C1D597 /* imgui_demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_demo.cpp; sourceTree = "<group>"; };
 		945706802A8B249600C1D597 /* imgui_draw.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui_draw.cpp; sourceTree = "<group>"; };
 		945851322A8E2C70008E7FAB /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
+		945BF8222AB09F1000E39058 /* NormalVisualization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NormalVisualization.h; sourceTree = "<group>"; };
+		945BF8232AB09F1000E39058 /* NormalVisualization.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NormalVisualization.cpp; sourceTree = "<group>"; };
+		945BF8292AB0A69000E39058 /* normal_visualization_gs.geom */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = normal_visualization_gs.geom; sourceTree = "<group>"; };
+		945BF82A2AB0A69000E39058 /* normal_visualization_vs.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = normal_visualization_vs.vert; sourceTree = "<group>"; };
+		945BF82B2AB0A69000E39058 /* normal_visualization_fs.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = normal_visualization_fs.frag; sourceTree = "<group>"; };
 		94659B7A2A97567E0043E81E /* box.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = box.txt; sourceTree = "<group>"; };
 		947E38CD2A96456C0055BBF8 /* triangle.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = triangle.txt; sourceTree = "<group>"; };
 		947E38CF2A9648110055BBF8 /* square.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = square.txt; sourceTree = "<group>"; };
@@ -613,6 +619,7 @@
 		941FD6282A864F1B00C932DD /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
+				945BF8252AB0A0C200E39058 /* NormalVisualization */,
 				943A99562AAD7ADE00D42907 /* skybox_fs.frag */,
 				943A99552AAD7ADE00D42907 /* skybox_vs.vert */,
 				94B5A9F92AA8A324001FF102 /* PostProcess_fs.frag */,
@@ -630,6 +637,8 @@
 				942C4E292AA77F8200DF276C /* PostProcess.cpp */,
 				943A99502AAD6FB700D42907 /* Skybox.h */,
 				943A99512AAD6FB700D42907 /* Skybox.cpp */,
+				945BF8222AB09F1000E39058 /* NormalVisualization.h */,
+				945BF8232AB09F1000E39058 /* NormalVisualization.cpp */,
 			);
 			path = Graphics;
 			sourceTree = "<group>";
@@ -658,6 +667,24 @@
 			);
 			name = imgui;
 			path = ../../3rd_party/imgui;
+			sourceTree = "<group>";
+		};
+		945BF8252AB0A0C200E39058 /* NormalVisualization */ = {
+			isa = PBXGroup;
+			children = (
+				945BF8282AB0A69000E39058 /* NormalVisualization */,
+			);
+			path = NormalVisualization;
+			sourceTree = "<group>";
+		};
+		945BF8282AB0A69000E39058 /* NormalVisualization */ = {
+			isa = PBXGroup;
+			children = (
+				945BF8292AB0A69000E39058 /* normal_visualization_gs.geom */,
+				945BF82A2AB0A69000E39058 /* normal_visualization_vs.vert */,
+				945BF82B2AB0A69000E39058 /* normal_visualization_fs.frag */,
+			);
+			name = NormalVisualization;
 			sourceTree = "<group>";
 		};
 		94AB12A52A888FAE0004D601 /* Textures */ = {
@@ -1242,6 +1269,7 @@
 				94ECD3202A937EC400FE034E /* Light.cpp in Sources */,
 				94AB12B02A88CA630004D601 /* stb_image.cpp in Sources */,
 				945706812A8B249600C1D597 /* imgui_widgets.cpp in Sources */,
+				945BF8242AB09F1000E39058 /* NormalVisualization.cpp in Sources */,
 				948A35A32AA5AC460009CCFC /* LoadTexture.cpp in Sources */,
 				94B5A9F82AA8945B001FF102 /* FileParser.cpp in Sources */,
 				945706832A8B249600C1D597 /* imgui_impl_opengl3.cpp in Sources */,

@@ -1490,7 +1490,93 @@ glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 ### 10.几何着色器
 
+#### （1）一个简单的Geometry Shader：
 
+```cpp
+#version 330 core
+layout (points) in; // 输入的图元类型
+layout (line_strip, max_vertices = 2) out;
+
+void main()
+{
+	gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+  EmitVertex();
+
+  gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+  EmitVertex();
+
+  EndPrimitive();
+}
+
+/*
+该几何着色器的作用：输入一个点，输出一条直线
+*/
+```
+
+包括：
+
+- `layout (points) in;` - 输入的图元类型
+
+  - <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309122102692.png" alt="截屏2023-09-12 21.02.08" style="zoom:40%;" />
+  - 图中：括号内的数字表示：一个图元所包含的最小顶点数
+
+- `layout (line_strip, max_vertices = 2) out;` - 输出的图元类型、最大能够输出的顶点数量
+
+  - 输出的图元类型包括`points`、`line_strip`、`triangle_strip`
+
+- `gl_in` - 内建变量：是一个接口块（类似具有in/out的struct结构）数组，存储顶点着色器的相关输出信息
+
+  - ```cpp
+    // gl_in的底层实现:
+    in gl_Vertex
+    {
+        vec4  gl_Position;
+        float gl_PointSize;
+        float gl_ClipDistance[];
+    } gl_in[];
+    ```
+
+- `EmitVertex` - 将`gl_Position`中的向量添加到图元中来
+- `EndPrimitive` - 所有发送出（EmitVertex）的顶点会被合成为指定的输出渲染图元 => **可以多次调用**，打包成多个图元
+
+几何着色器的使用方式类似于vs和fs，也需要编译和链接，只是着色器类型为`GL_GEOMETRY_SHADER`
+
+⚠️注意：因为几何着色器现在插足与顶点着色器和片段着色器之间，所以vs到fs的数据传递会变动，所以我们需要**在几何着色器中完成数据的传递**。比较不一样的是，几何着色器输入是多个顶点，<font color='red'>**所以数据都是以数组形式**</font>：
+
+```glsl
+/// vertex shader
+out VS_OUT{
+	vec3 color;
+} vs_out;
+out vec2 texCoord;
+
+
+/// geometry shader
+// 处理输入:
+in VS_OUT{
+	vec3 color;
+} gs_in[]; // ⚠️数组
+in vec2 texCoord[];
+// 处理输出
+out vec3 fColor; // 这里没写成数组的形式，它的工作原理是：当EmitVertex时，会发送fTexCoord中存储的值（所以如果所有顶点TexCoord一样，只需要在shader中设置一次）
+out vec2 fTexCoord; 
+
+void main()
+{
+  fTexCoord = gs_in[0].color;
+  ...
+  EmitVertex();
+  ...
+  EmitVertex();
+}
+```
+
+几何着色器能实现以下**有趣的功能**：
+
+- billboard：**公告牌技术**
+- **可视化法线**
+
+使用几何着色器的一些技巧：（1）一般我们不在vertex shader中计算gl_Position到齐次裁剪空间，因为这没办法在几何着色器中进行平移等操作，我们一般先处理到view空间，再把projection矩阵传进GS；（2）我们可以让GS什么多不做，传进什么再传出什么，可以方便查找shader错误
 
 ## C1 调试
 

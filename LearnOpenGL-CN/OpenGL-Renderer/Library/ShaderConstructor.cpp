@@ -1,13 +1,16 @@
 #include "ShaderConstructor.h"
 
 
-ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString, const std::string fsMacroString) : vsPath(vs_path), fsPath(fs_path)
+ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::string fs_path, const std::string vsMacroString, const std::string fsMacroString, const std::string gs_path) : vsPath(vs_path), fsPath(fs_path), gsPath(gs_path)
 {
-    std::string vsString, fsString;
-    std::ifstream vsFile, fsFile;
+    bool isUseGS = (gsPath != "");
+    
+    std::string vsString, fsString, gsString;
+    std::ifstream vsFile, fsFile, gsFile;
     // 保证文件可以抛出异常
     vsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    gsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try {
         vsFile.open(vsPath.c_str());
         fsFile.open(fsPath.c_str());
@@ -18,6 +21,15 @@ ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::strin
         fsFile.close();
         vsString = vsStream.str();
         fsString = fsStream.str();
+        
+        if(isUseGS)
+        {
+            gsFile.open(gsPath.c_str());
+            std::stringstream gsStream;
+            gsStream << gsFile.rdbuf();
+            gsFile.close();
+            gsString = gsStream.str();
+        }
     } catch (std::ifstream::failure e) {
         std::cout << "ERROR [Shader Constructor]: file not successfully read" << std::endl;
     }
@@ -31,18 +43,19 @@ ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::strin
     
     const char* vsCode = vsString.c_str();
     const char* fsCode = fsString.c_str();
+    const char* gsCode = gsString.c_str();
 
     int success;
     char infoLog[512];
     
-    unsigned int VS, FS;
+    unsigned int VS, FS, GS;
     
     VS = glCreateShader(GL_VERTEX_SHADER);
     FS = glCreateShader(GL_FRAGMENT_SHADER);
     
     glShaderSource(VS, 1, &vsCode, NULL);
     glShaderSource(FS, 1, &fsCode, NULL);
-    
+        
     glCompileShader(VS);
     glCompileShader(FS);
     
@@ -60,10 +73,28 @@ ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::strin
         std::cout << "ERROR [Fragment Shader]: compilation failed" << std::endl;
     }
     
+    if(isUseGS)
+    {
+        GS = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(GS, 1, &gsCode, NULL);
+        glCompileShader(GS);
+        glGetShaderiv(GS, GL_COMPILE_STATUS, &success);
+        if(!success)
+        {
+            glGetShaderInfoLog(GS, 512, NULL, infoLog);
+            std::cout << "ERROR [Geometry Shader]: compilation failed" << std::endl;
+        }
+    }
+    
     ID = glCreateProgram();
     
     glAttachShader(ID, VS);
     glAttachShader(ID, FS);
+    if(isUseGS)
+    {
+        glAttachShader(ID, GS);
+    }
+        
     
     glLinkProgram(ID);
     
@@ -76,6 +107,11 @@ ShaderConstructor::ShaderConstructor(const std::string vs_path, const std::strin
     
     glDeleteShader(VS);
     glDeleteShader(FS);
+    if(isUseGS)
+    {
+        glDeleteShader(GS);
+    }
+        
 }
 
 ShaderConstructor::~ShaderConstructor()

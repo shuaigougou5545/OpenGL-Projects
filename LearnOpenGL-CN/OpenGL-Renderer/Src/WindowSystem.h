@@ -70,6 +70,8 @@ private:
 
 public:
     bool render_to_pic = false;
+    bool normal_visualization = false;
+    float normal_visualization_len = 0.1;
     
     PostProcessInfo post_process_info;
 };
