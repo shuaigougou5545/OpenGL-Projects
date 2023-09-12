@@ -6,8 +6,12 @@ out vec3 PosW;
 out vec3 NormalW;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+
+layout(std140) uniform cbPass
+{
+    mat4 view;
+    mat4 projection;
+};
 
 
 void main()

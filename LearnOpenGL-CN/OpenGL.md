@@ -1340,12 +1340,157 @@ glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vert
       <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309101811449.png" alt="截屏2023-09-10 18.10.50" style="zoom:50%;" />
 
       可以通过设置深度条件，告诉OpenGL我们会对深度值进行修改的方向，比如greater和less能够辅助OpenGL进行部分的提前深度测试
+  
+  - gl_FragData：TODO
 
 #### （2）接口块
 
+现在顶点着色器和像素着色器之间传递数据，都是通过定义一个一个对应变量实现，但这么写起来麻烦。OpenGL为了帮助我们管理这些变量，提供了**接口块**（Interface Block），类似于struct
 
+```cpp
+// vertex shader
+...
+out VS_OUT{
+	vec2 TexCoords; // 注意:块内就不用写in/out了
+} vs_out;
+...
+void main()
+{
+	vs_out.TexCoords = ...; // ⚠️使用时,要用块名作为前缀
+}
+  
+// fragment shader
+...
+in VS_OUT{
+	vec2 TexCoords;
+} fs_in;
+```
+
+上述代码中，`VS_OUT`是<font color='red'>**块名**</font>，**必须一致**；`vs_out`和`fs_in`是**实例名**，可以随意 => <font color='purple'>**只要两个接口块的名字（块名）一样，输入和输出就能匹配起来**</font>
 
 #### （3）Uniform缓冲对象
+
+当有多个着色器时，我们会发现大部分uniform变量都是相同的，但我们却要反复设置 => 为解决这个问题，OpenGL提供**Uniform缓冲对象**（Uniform Buffer Object）
+
+Uniform缓冲对象是一个缓冲对象，所以通过`glGenBuffers`创建，缓冲类型是：`GL_UNIFORM_BUFFER`
+
+比如，我们想要将projection和view存入Uniform块中：<font color='red'>**⚠️注意:uniform块中的变量可以直接访问,不需要将块名作为前缀**</font>
+
+```glsl
+// vertex shader
+...
+layout(std140) uniform Matrics
+{
+	mat4 projection;
+	mat4 view;
+};
+  
+uniform mat4 model;
+
+void main()
+{
+	gl_Position = projection * view * model * vec4(aPos, 1.0); // ⚠️注意:uniform块中的变量可以直接访问,不需要将块名作为前缀
+}
+```
+
+#### （4）Uniform块布局
+
+Uniform块中的变量并不一定都是紧密相邻排布的，这会导致我们使用`glBufferData`或`glBufferSubData`出现错误，所以我们需要了解Uniform块布局以及布局规则
+
+有几种常见的内存布局方式：
+
+- 共享布局（shared布局）：<font color='purple'>【**默认的**】</font>共享是指由硬件决定偏移量，并根据硬件定义的偏移量堆GLSL进行调整，以保证多个程序中保持一致 => 需要通过`glGetUniformIndices`来查询偏移信息，比较麻烦 【TODO：以后再来研究】
+
+- **`std140`布局**：std140布局规则显示规定了每个变量的偏移量，显示地定义了规则意味着我们可以根据这些规则明确知道内存布局方式 => **显示的规定虽然不一定是最高效的，但一定能保证在各个程序中是一致的**
+
+  - 布局规则：【内存对齐】
+
+    - 每个变量有一个**基准对齐量**，表示该变量在Uniform块中所占据的空间（包括填充量（Padding）），比如int、bool等标量类型，都是4字节，而向量vecn可能是2\*4字节，可能是4\*4字节（特别的：vec3就是4*4字节，也就是要填充4字节的空白），而对于矩阵类型，相当于存储为多个vec4
+    - 再计算它的**对齐偏移量**，一个变量的对齐偏移量必须等于**基准对齐量的倍数** => 也就是如果基准对齐量为4*4字节，那么该变量的起始地址必须存放在4\*4\*n的地址上，这是为了**方便寻址**
+
+    <img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309101851642.png" alt="截屏2023-09-10 18.51.39" style="zoom:50%;" />
+
+  - 对齐偏移量例子：
+
+    ```cpp
+    layout (std140) uniform ExampleBlock
+    {
+                         // 基准对齐量       // 对齐偏移量
+        float value;     // 4               // 0 
+        vec3 vector;     // 16              // 16  (必须是16的倍数，所以 4->16)
+        mat4 matrix;     // 16              // 32  (列 0)
+                         // 16              // 48  (列 1)
+                         // 16              // 64  (列 2)
+                         // 16              // 80  (列 3)
+        float values[3]; // 16              // 96  (values[0])
+                         // 16              // 112 (values[1])
+                         // 16              // 128 (values[2])
+        bool boolean;    // 4               // 144
+        int integer;     // 4               // 148
+    }; 
+    ```
+
+- `std430`布局
+
+- 紧凑布局（packed布局）
+
+TODO：研究内存布局
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309102152074.png" alt="截屏2023-09-10 21.51.32 1" style="zoom:40%;" />
+
+#### （5）使用Uniform缓冲
+
+```cpp
+// 跟其他缓冲一样,
+unsigned int uboExampleBlock;
+glGenBuffers(1, &uboExampleBlock);
+glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+glBufferData(GL_UNIFORM_BUFFER, 152, NULL, GL_STATIC_DRAW); // 分配152字节的内存
+glBindBuffer(GL_UNIFORM_BUFFER, 0);
+```
+
+如何将Uniform缓冲和shader中对应Uniform块对应起来，涉及两个概念：
+
+- Block indices（块索引）：在每个着色器程序中，每个Uniform块对应一个块索引
+- Binding points（绑定点）：绑定点类似于`GL_TEXTURE0`一样，也是预先挖好的坑，我们会将Uniform缓冲数据绑定在绑定点上；绑定点有0、1、2 ...
+
+使用时，我们需要将块索引和绑定点链接起来，即可正确使用Uniform缓冲
+
+```
+unsigned int lights_index = glGetUniformBlockIndex(shaderA.ID, "Lights");
+glUniformBlockBinding(shaderA.ID, lights_index, 2);
+```
+
+<img src="https://cdn.jsdelivr.net/gh/shuaigougou5545/blog-image/img/202309111225467.png" alt="advanced_glsl_binding_points" style="zoom:100%;" />
+
+PS：在OpenGL4.2版本起，可以在shader中显示指出Uniform缓冲块对应哪个绑定点，不再需要在外部调用`glUniformBlockBinding`
+
+```glsl
+layout(std140, binding = 2) uniform Lights { ... };
+```
+
+不仅shader中Uniform块要绑定在Binding points上，Uniform块缓冲区也要绑定到对应Binding Points上：
+
+```cpp
+glBindBufferBase(GL_UNIFORM_BUFFER, 2, uboExampleBlock); // 2:绑定点2 uboExampleBlock:缓冲区
+// 或者
+glBindBufferRange(GL_UNIFORM_BUFFER, 2, uboExampleBlock, 0, 152); // 0:附加偏移量 152:大小参数，可以将缓冲区的一部分绑定在点上 => 这样可以将多个缓冲区的多个部分合并在一起绑定在绑定区上
+```
+
+最后向缓冲对象输入数据：
+
+```cpp
+glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+int b = true; // GLSL中的bool是4字节的，所以我们将它存为一个integer
+glBufferSubData(GL_UNIFORM_BUFFER, 144, 4, &b); 
+glBindBuffer(GL_UNIFORM_BUFFER, 0);
+```
+
+总结一下：创建Uniform缓冲区 => 绑定到Binding Point上`glBindBufferBase/glBindBufferRange` => 为缓冲区注入数据 => 将Shader中Uniform块绑定到Binding Point上(通过Block index来过渡) 「注意：不再需要通过glUniform...函数传递数据」
+
+### 10.几何着色器
+
+
 
 ## C1 调试
 

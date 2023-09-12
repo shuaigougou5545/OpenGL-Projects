@@ -149,10 +149,9 @@ void ShaderConstructor::setMat4(const std::string &name, const float *value, GLi
     glUniformMatrix4fv(getLocation(name) + LocationOffset, 1, GL_FALSE, value);
 }
 
-void ShaderConstructor::setArray1f(const std::string &name, GLint count, const float *value, GLint LocationOffset) const
+void ShaderConstructor::setUniformBlock(const std::string &name, const int idx) const
 {
-    // 貌似这种trick不行
-    glUniform1fv(getLocation(name) + LocationOffset, count, value);
+    glUniformBlockBinding(ID, getBlockIndex(name), (GLint)idx);
 }
 
 GLint ShaderConstructor::getLocation(const std::string &name) const
@@ -161,4 +160,13 @@ GLint ShaderConstructor::getLocation(const std::string &name) const
     if(loc == -1)
         std::cout << "ERROR [Shader Uniform Location]: get uniform '" << name << "' location failed" << std::endl;
     return loc;
+}
+
+GLint ShaderConstructor::getBlockIndex(const std::string &name) const
+{
+    GLint idx = glGetUniformBlockIndex(ID, name.c_str());
+    if(idx == -1)
+        std::cout << "ERROR [Shader Uniform Block Index]: get uniform block '" << name << "' index failed" << std::endl;
+    
+    return idx;
 }

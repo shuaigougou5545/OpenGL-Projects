@@ -11,6 +11,7 @@ void RenderSystem::initialize()
 {
     initModels();
     initOpenGLObjects();
+    initUniformBlocks();
     initTextures();
     initLogic();
     initSkybox();
@@ -19,6 +20,8 @@ void RenderSystem::initialize()
 
 void RenderSystem::tick(float delta_time)
 {
+    updateLogic();
+    updateUniformBlocks();
     draw();
 }
 
@@ -75,6 +78,20 @@ void RenderSystem::initOpenGLObjects()
     }
 }
 
+void RenderSystem::initUniformBlocks()
+{
+    glGenBuffers(1, &ubo_cbPass);
+    
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPass);
+    
+    // 这个写法不严谨,如果C++编译器对其进行内存对齐,那么得到的结果可能与预想的不一样
+    size_t size = sizeof(cbPass);
+    glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo_cbPass);
+}
+
 void RenderSystem::initTextures()
 {
     unsigned int texture;
@@ -84,7 +101,7 @@ void RenderSystem::initTextures()
 
 void RenderSystem::initShaders()
 {
-    shader_constructor_ptr = std::make_shared<ShaderConstructor>("./Shaders/VS.vert", "./Shaders/FS.frag");
+    shader_constructor_ptr = std::make_shared<ShaderConstructor>("./Shaders/vs.vert", "./Shaders/fs.frag");
 }
 
 void RenderSystem::initLogic()
@@ -118,6 +135,18 @@ void RenderSystem::updateLogic()
     viewport_width *= 2;
     viewport_height *= 2;
 #endif
+    
+    camera = &window_sys->camera;
+}
+
+void RenderSystem::updateUniformBlocks()
+{
+    cbPass cb_pass;
+    cb_pass.view = camera->GetViewMatrix();
+    cb_pass.projection = glm::perspective(glm::radians(camera->Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPass);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(cbPass), &cb_pass);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void RenderSystem::draw()
@@ -137,16 +166,6 @@ void RenderSystem::draw()
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto& camera = window_sys->camera;
-
-    //
-    // Shared: Uniform
-    //
-    MVP mvp;
-    mvp.view = camera.GetViewMatrix();
-    mvp.projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
-    sc->setMat4("view", glm::value_ptr(mvp.view));
-    sc->setMat4("projection", glm::value_ptr(mvp.projection));
 
     glm::vec4 gAmbientLight = glm::vec4(0.25f, 0.25f, 0.25f, 1.0f);
     sc->setVec4("gAmbientLight", glm::value_ptr(gAmbientLight));
@@ -166,17 +185,17 @@ void RenderSystem::draw()
     sc->setVec3("gLights[2].Strength", glm::value_ptr(lights[2].Strength));
     sc->setVec3("gLights[2].Direction", glm::value_ptr(lights[2].Direction));
 
-    sc->setVec3("gViewPos", glm::value_ptr(camera.Position));
+    sc->setVec3("gViewPos", glm::value_ptr(camera->Position));
 
 
     //
     // Skull
     //
-    mvp.model = glm::mat4(1.0);
-    mvp.model = glm::translate(mvp.model, glm::vec3(0.f, 0.f, 0.f));
-    mvp.model = glm::rotate(mvp.model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
-    mvp.model = glm::scale(mvp.model, glm::vec3(1.f));
-    sc->setMat4("model", glm::value_ptr(mvp.model));
+    glm::mat4 model = glm::mat4(1.0);
+    model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
+    model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
+    model = glm::scale(model, glm::vec3(1.f));
+    sc->setMat4("model", glm::value_ptr(model));
 
     Material mat;
     mat.FresnelR0 = glm::vec3(0.05f);
@@ -194,9 +213,8 @@ void RenderSystem::draw()
 
 void RenderSystem::drawSkybox()
 {
-    auto& camera = window_sys->camera;
-    glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-    glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
+    glm::mat4 view = glm::mat4(glm::mat3(camera->GetViewMatrix()));
+    glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
     
     skybox_ptr->drawSkybox(view, projection);
 }

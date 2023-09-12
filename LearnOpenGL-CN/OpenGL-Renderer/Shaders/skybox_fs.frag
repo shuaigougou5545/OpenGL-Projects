@@ -2,11 +2,14 @@
 
 out vec4 FragColor;
 
-in vec3 texture_dir;
+in VS_OUT{
+    vec3 texture_dir;
+} fs_in;
+
 
 uniform samplerCube cubemap;
 
 void main()
 {
-    FragColor = texture(cubemap, texture_dir);
+    FragColor = texture(cubemap, fs_in.texture_dir);
 }

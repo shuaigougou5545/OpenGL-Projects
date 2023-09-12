@@ -39,9 +39,10 @@ public:
     void setMat3(const std::string &name, const float *value, GLint LocationOffset = 0) const;
     void setMat4(const std::string &name, const float *value, GLint LocationOffset = 0) const;
     
-    void setArray1f(const std::string &name, GLint count, const float *value, GLint LocationOffset = 0) const;
+    void setUniformBlock(const std::string &name, const int idx) const;
     
     GLint getLocation(const std::string &name) const;
+    GLint getBlockIndex(const std::string &name) const;
 };
 
 #endif /* ShaderConstructor_h */

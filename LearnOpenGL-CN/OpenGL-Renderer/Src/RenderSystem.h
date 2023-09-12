@@ -21,8 +21,8 @@
 #include "Skybox.h"
 
 
-struct MVP{
-    glm::mat4 model = glm::mat4(1.0f);
+struct cbPass{
+    // binding point: 0
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
 };
@@ -39,6 +39,7 @@ public:
     
     void initModels();
     void initOpenGLObjects();
+    void initUniformBlocks();
     void initTextures();
     void initShaders();
     void initLogic();
@@ -46,20 +47,26 @@ public:
     
     void updateLogic();
     void draw();
+    void updateUniformBlocks();
     void drawSkybox();
+    
 private:
     std::vector<Model> models;
     std::vector<GLuint> VBOs;
     std::vector<GLuint> EBOs;
     std::vector<GLuint> VAOs;
     std::vector<GLuint> textures;
+    
     std::shared_ptr<WindowSystem> window_sys;
+    Camera* camera;
     int window_width = 800, window_height = 600;
     int viewport_width = 1600, viewport_height = 1200;
     
     std::shared_ptr<ShaderConstructor> shader_constructor_ptr;
     std::shared_ptr<PostProcess> postprocess_ptr;
     std::shared_ptr<Skybox> skybox_ptr;
+    
+    GLuint ubo_cbPass;
 };
 
 
