@@ -237,7 +237,6 @@ int main()
         
         glm::mat4 model = glm::mat4(1.0), view = glm::mat4(1.0), projection = glm::mat4(1.0);
         
-        
         //
         // skybox
         //
@@ -254,6 +253,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         
         glDepthMask(GL_TRUE);
+        
         
         
         // objects
@@ -296,7 +296,7 @@ int main()
         model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
         model = glm::scale(model, glm::vec3(1.f));
         sc.setMat4("model", glm::value_ptr(model));
-
+        
         Material mat;
         mat.FresnelR0 = glm::vec3(0.05f);
         mat.Roughness = 0.3f;

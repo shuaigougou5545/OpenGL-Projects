@@ -1578,6 +1578,184 @@ void main()
 
 使用几何着色器的一些技巧：（1）一般我们不在vertex shader中计算gl_Position到齐次裁剪空间，因为这没办法在几何着色器中进行平移等操作，我们一般先处理到view空间，再把projection矩阵传进GS；（2）我们可以让GS什么多不做，传进什么再传出什么，可以方便查找shader错误
 
+### 11.实例化
+
+#### （1）实例化
+
+**实例化的作用是减少draw call**：为进行一次draw call，OpenGL会做很多准备工作（比如：告诉GPU在哪个缓冲读取数据、哪里去寻找顶点属性等），CPU与GPU之间通信耗费性能，所以我们希望尽可能减少draw call。
+
+实例化操作时，绘制函数从`glDrawArrays()`、`glDrawElements()`替换为**`glDrawArraysInstanced()`、`glDrawElementsInstanced()`** => 实例化函数在此基础上额外添加参数**“实例数量”** => 相当于我们可以共享顶点数据，而一次性绘制多个相似的物体
+
+通过GLSL内建变量：`gl_InstanceID`来获取当前实例索引（从0开始）
+
+一般的操作：<font color='purple'>**我们将Uniform数据写成数组的形式，通过gl_InstanceID获取对应的属性，来进行实例化渲染**</font>
+
+#### （2）实例化数组
+
+实例化有一个问题，因为我们能设置的Uniform是有限的，所以通过`gl_InstanceID`来索引Uniform数组的方式，在绘制大量相同object是有问题的 
+
+=> OpenGL引入**实例化数组**，实例化数组是一个顶点属性，仅在绘制新的实例时才会更新
+
+区分顶点属性&实例化数组：
+
+- 常规的顶点属性：vertex shader每次运行，对应的顶点属性就会更新
+- 实例化数组：只有vertex shader绘制某个实例时，对应的实例化数组才会更新
+
+配置实例化数组和顶点属性大致一致，都要创建VBO，配置顶点属性，只是要额外调用函数`glVertexAttribDivisor`，用于指示OpenGL在什么时候更新顶点属性：
+
+```cpp
+// layout(location = 2) in vec2 offset;
+glm::vec2 offsets[100];
+
+unsigned int vbo;
+glGenBuffers(1, &vbo);
+glBindBuffer(GL_ARRAY_BUFFER, vbo);
+glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &offsets[0], GL_STATIC_DRAW);
+
+glEnableVertexAttribArray(2);
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+glBindBuffer(GL_ARRAY_BUFFER, 0);
+glVertexAttribDivsor(2, 1);
+```
+
+`glVertexAttribDivsor(GLuint index, GLuint divisor)`：
+
+- 参数1：指定顶点属性位置
+- 参数2：属性除数（默认值为0），它是指OpenGL每绘制n个实例时，就更新顶点属性；比如n=1就是每次绘制新实例就更新「**当属性除数不等于0时，相当于告诉OpenGL我们在使用实例化数组**」
+
+从上面可以看出，我们为实例化数组单独创建了VBO？TODO
+
+### 12.抗锯齿
+
+#### （0）抗锯齿介绍
+
+> 参考博客：请问FXAA、FSAA与MSAA有什么区别？效果和性能上哪个好？ - 文刀秋二的回答 - 知乎 https://www.zhihu.com/question/20236638/answer/44821615
+
+常见抗锯齿分为：硬件层面（MSAA）、后处理（PPAA：Post Processing）
+
+##### 走样（Aliasing）：
+
+- **几何走样**：几何覆盖函数采样不足，也就是俗称的边缘锯齿
+- **着色走样**：渲染方程的采样不足（因为渲染方程也是连续函数，可能会产生噪点等）
+
+#### （1）SSAA
+
+SSAA：super sample anti-aliasing - 超采样抗锯齿：使用更高的分辨率渲染，再**下采样**到正常分辨率
+
+OpenGL没有直接的API，需要手动实现
+
+#### （2）MSAA
+
+> 参考博客：移动端高性能图形开发 - 详解MSAA - 拳四郎的文章 - 知乎 https://zhuanlan.zhihu.com/p/382063141
+
+MSAA：multisampling anti-aliasing - 多重采样：采用多采样点的形式，最后在光栅化时判断有多少采样点在三角形内，这个比例乘以对应颜色，即是结果。=> **MSAA只能处理边缘的走样问题，也就是几何走样**，无法处理内部走样问题
+
+注意的是：对于X倍的MSAA，也就是有X个采样点，那么就需要额外的存储空间来存储这些采样点的计算结果
+
+GLFW窗口系统为我们提供了多重采样缓冲，以代替默认的颜色缓冲：扩大颜色缓冲的同时深度缓冲也会扩大
+
+```cpp
+glfwWindowHint(GLFW_SAMPLES, 4); // 4xMSAA
+glEnable(GL_MULTISAMPLE); // 大多数驱动是默认启动MSAA的
+```
+
+#### （3）离屏MSAA
+
+离屏MSAA需要一个**支持存储多个采样点的纹理**，我们使用`glTexImage2DMultisample`来代替`glTexImage2D`，对应的纹理对象是`GL_TEXTURE_2D_MULTISAMPLE`
+
+```cpp
+glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
+glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGB, width, height, GL_TRUE);
+// samplers:样本个数
+// 最后一个参数:图像将会对每个纹素使用相同的样本位置，以及相同数量的子采样点个数
+glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+// 多重采样纹理附加到帧缓冲上
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0);
+```
+
+`glRenderbufferStorage`替换为`glRenderbufferStorageMultisample`
+
+```cpp
+glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, width, height);
+```
+
+因为多重采样的图像包含比普通图像更多的信息，不能直接采样，所以我们需要进行缩小/还原图像（降采样），使用**`glBlitFramebuffer`**来完成 => 主要作用是将多重采样帧缓冲区的内容复制到普通帧缓冲区
+
+```cpp
+glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
+glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // 0: 默认帧缓冲
+glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+// 借助GL_READ_FRAMEBUFFER和GL_WRITE_FRAMEBUFFER实现复制
+```
+
+这里渲染到默认缓冲区，也可以选择渲染到没有使用多重采样纹理的fbo上
+
+#### （4）自定义抗锯齿算法
+
+其实可以将多重采样的纹理图像直接传入shader，GLSL提供了这样的选项，让我们能对每个子样本进行采样
+
+```cpp
+uniform sampler2DMS screenTextureMS; // sampler2DMS
+vec4 col = texelFetch(screenTextureMS, TexCoords, 3); // 第4个子样本(0/1/2/3)
+```
+
+#### （5）回顾SSAA
+
+根据MSAA的启发，我们可以手动实现SSAA，具体步骤如下：
+
+- 更高分辨率的渲染：调整视口、创建帧缓冲
+- 渲染到纹理
+- 手动将采样，通过shader来渲染到常规大小的缓冲区【也可以使用`glBlitFramebuffer`】
+- 渲染
+
+#### （6）常见抗锯齿
+
+- SSAA：超级采样抗锯齿
+
+- MSAA：多重采样抗锯齿【不与“延迟渲染”兼容】
+
+- TAA：Temporal AA：（后处理）在时间维度上，综合历史帧的数据来实现抗锯齿
+
+  - > https://zhuanlan.zhihu.com/p/425233743
+
+- **FXAA**：Fast Approximate AA：（后处理）形变抗锯齿，检测出图像边缘的区域，通过两侧像素混合来实现抗锯齿 => 性能便宜，但会变糊
+
+  - > https://zhuanlan.zhihu.com/p/431384101
+
+- MLAA：同样是边缘检测+像素混合，是FXAA的改进版本
+
+- **SMAA**：（MLAA的加强版）
+
+## S4 高级光照
+
+### 1.Bloom - 泛光/光晕
+
+#### （1）bloom概述
+
+因为监视器亮度范围有限，所以一种策略就是将光源的光“泄漏”，看起来像是强光区一样
+
+步骤：我们确定一个颜色亮度阈值，超过这个阈值的光我们提取出来，进行模糊处理（一般是高斯模糊），那么这个模糊的纹理贴在原渲染图上，就产生了bloom效果
+
+#### （2）MRT（Multiple Render Targets）多渲染目标
+
+我们一个像素着色器其实不仅可以有一个输出，我们可以输出到多个颜色缓冲中
+
+```glsl
+// 输出到两个缓冲
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
+```
+
+要实现像素着色器的多个输出，需要：**有多个颜色缓冲附加到了当前绑定的帧缓冲对象上**，要通过`glFramebufferTexture2D`绑定多个`GL_COLOR_ATTACHMENT...`，并显示告诉OpenGL正在绘制到多个颜色缓冲：
+
+```cpp
+GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+glDrawBuffers(2, attachments);
+```
+
+
+
 ## C1 调试
 
 ### 1.glGetError()
@@ -1905,6 +2083,10 @@ TODO：后续在继续研究这个问题，目前我将viewport设置为实际�
 ## Q3 常见贴图类型
 
 > 参考文章：https://zhuanlan.zhihu.com/p/260973533
+
+## Q4 模型加载
+
+#### （1）assimp
 
 
 

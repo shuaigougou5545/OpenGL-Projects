@@ -5,7 +5,10 @@ layout(location = 1) in vec3 aNormal;
 out vec3 PosW;
 out vec3 NormalW;
 
-uniform mat4 model;
+layout(std140) uniform cbPerObject
+{
+    mat4 model;
+};
 
 layout(std140) uniform cbPass
 {

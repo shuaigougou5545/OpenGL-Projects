@@ -83,17 +83,24 @@ void RenderSystem::initOpenGLObjects()
 
 void RenderSystem::initUniformBlocks()
 {
-    glGenBuffers(1, &ubo_cbPass);
+    GLint binding_point = 0;
     
-    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPass);
+    // cbPerObject [binding_point: 0]
+    cb_per_object_list.resize(models.size());
     
-    // 这个写法不严谨,如果C++编译器对其进行内存对齐,那么得到的结果可能与预想的不一样
-    size_t size = sizeof(cbPass);
-    glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);
+    glGenBuffers(1, &ubo_cbPerObject);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPerObject);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(cbPerObject), NULL, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, ubo_cbPerObject);
     
-    // 绑定到binding_point_0上
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo_cbPass);
+    // cbPass [binding_point: 1]
+    binding_point++;
+    glGenBuffers(1, &ubo_cbPass);
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPass);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(cbPass), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point, ubo_cbPass);
 }
 
 void RenderSystem::initTextures()
@@ -150,7 +157,7 @@ void RenderSystem::updateLogic()
 
 void RenderSystem::updateUniformBlocks()
 {
-    cbPass cb_pass;
+    // cbPass [binding_point: 1]
     cb_pass.view = camera->GetViewMatrix();
     cb_pass.projection = glm::perspective(glm::radians(camera->Zoom), (float)viewport_width / viewport_height, 0.1f, 100.f);
     glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPass);
@@ -166,7 +173,8 @@ void RenderSystem::draw()
     
     auto& sc = shader_constructor_ptr;
     sc->use();
-    sc->setUniformBlock("cbPass", 0);
+    sc->setUniformBlock("cbPerObject", 0);
+    sc->setUniformBlock("cbPass", 1);
     sc->setInt("gMat.DiffuseTexture", 0);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
 
@@ -205,7 +213,12 @@ void RenderSystem::draw()
     model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
     model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
     model = glm::scale(model, glm::vec3(1.f));
-    sc->setMat4("model", glm::value_ptr(model));
+    
+    cb_per_object_list[0].model = model;
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo_cbPerObject);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(cb_per_object_list[0]), &cb_per_object_list[0]);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    
 
     Material mat;
     mat.FresnelR0 = glm::vec3(0.05f);
@@ -227,13 +240,8 @@ void RenderSystem::drawNormalVisualization()
     normalvisualization_ptr->use_shader(window_sys->normal_visualization_len);
     
     // TODO: 整理一下，有点乱
-    normalvisualization_ptr->sc_ptr->setUniformBlock("cbPass", 0);
-    
-    glm::mat4 model = glm::mat4(1.0);
-    model = glm::translate(model, glm::vec3(0.f, 0.f, 0.f));
-    model = glm::rotate(model, glm::radians(180.f), glm::vec3(0.f, 1.f, 0.f));
-    model = glm::scale(model, glm::vec3(1.f));
-    normalvisualization_ptr->sc_ptr->setMat4("model", glm::value_ptr(model));
+    normalvisualization_ptr->sc_ptr->setUniformBlock("cbPerObject", 0);
+    normalvisualization_ptr->sc_ptr->setUniformBlock("cbPass", 1);
 
     glBindVertexArray(VAOs[0]);
     glDrawElements(GL_TRIANGLES, int(models[0].indices.size()), GL_UNSIGNED_INT, 0);

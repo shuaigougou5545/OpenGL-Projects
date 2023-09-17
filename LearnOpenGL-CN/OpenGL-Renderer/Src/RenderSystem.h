@@ -28,6 +28,10 @@ struct cbPass{
     glm::mat4 projection = glm::mat4(1.0f);
 };
 
+struct cbPerObject{
+    glm::mat4 model = glm::mat4(1.0f);
+};
+
 
 class RenderSystem{
 public:
@@ -70,7 +74,12 @@ private:
     std::shared_ptr<Skybox> skybox_ptr;
     std::shared_ptr<NormalVisualization> normalvisualization_ptr;
     
+    // Uniform Block
     GLuint ubo_cbPass;
+    GLuint ubo_cbPerObject;
+    
+    cbPass cb_pass;
+    std::vector<cbPerObject> cb_per_object_list;
 };
 
 
